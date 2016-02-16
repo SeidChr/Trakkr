@@ -15,7 +15,7 @@ namespace Trakkr.ViewModels
 
         public DateTime LocaTimestamp
         {
-            get {return UtcTimestamp.ToLocalTime(); }
+            get { return UtcTimestamp.ToLocalTime(); }
             set { UtcTimestamp = value.ToUniversalTime(); }
         }
 
