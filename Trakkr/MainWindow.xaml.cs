@@ -36,19 +36,8 @@ namespace Trakkr
         {
             InitializeComponent();
             mainViewModel = (MainViewModel)Application.Current.Resources["MainViewModel"];
-
-            var catalog = new AssemblyCatalog(Assembly.GetExecutingAssembly());
-            var builder = new ContainerBuilder();
-            builder.RegisterComposablePartCatalog(catalog);
-            var container = builder.Build();
-
-            Repository = container.Resolve<IEventRepository>();
-        }
-
-        private void Button_OnClick(object sender, RoutedEventArgs e)
-        {
-            var viewModel = new EventViewModel();
-            mainViewModel.Events.Add(viewModel);
+            
+            Repository = App.Container.ResolveKeyed<IEventRepository>("TextFile");
         }
     }
 }
