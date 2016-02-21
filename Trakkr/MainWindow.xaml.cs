@@ -30,14 +30,13 @@ namespace Trakkr
     {
         private MainViewModel mainViewModel;
 
-        public IEventRepository Repository { get; set; }
+        private IEventRepository Repository { get; set; }
 
         public MainWindow()
         {
             InitializeComponent();
-            mainViewModel = (MainViewModel)Application.Current.Resources["MainViewModel"];
-            
-            Repository = App.Container.ResolveKeyed<IEventRepository>("TextFile");
+            mainViewModel = App.Container.Resolve<MainViewModel>();
+            Repository = App.Container.ResolveNamed<IEventRepository>("EventRepository");
         }
     }
 }

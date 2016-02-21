@@ -64,11 +64,16 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="DependencyInjection\Container.cs" />
+    <Compile Include="Commands\NextCommand.cs" />
+    <Compile Include="Commands\PauseCommand.cs" />
+    <Compile Include="Model\EventCaptureSet.cs" />
+    <Compile Include="Model\EventType.cs" />
     <Compile Include="Model\Event.cs" />
     <Compile Include="Model\FileEventRepository.cs" />
+    <Compile Include="Model\IEventCaptureSet.cs" />
     <Compile Include="Model\IEventRepository.cs" />
     <Compile Include="Model\IEvent.cs" />
+    <Compile Include="Properties\Annotations.cs" />
     <Compile Include="ViewModels\EventViewModel.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Page Include="MainWindow.xaml">
@@ -112,9 +117,7 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Commands\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
