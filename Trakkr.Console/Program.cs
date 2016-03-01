@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using Trakkr.Core;
+using Trakkr.YouTrack;
+using YouTrackSharp.Issues;
 
 namespace Trakkr.Console
 {
@@ -11,6 +13,16 @@ namespace Trakkr.Console
         static void Main(string[] args)
         {
             List<TrakkrEntry<string>> entries = new List<TrakkrEntry<string>>();
+            System.Console.Write("Youtrack Host: ");
+            var host = System.Console.ReadLine();
+            System.Console.Write("Username: ");
+            var username = System.Console.ReadLine();
+            System.Console.Write("Password: ");
+            var password = System.Console.ReadLine();
+
+
+            var connection = YouTrackManager.GetConnection(host, username, password);
+            var issueManagement = new IssueManagement(connection);
 
             var inputFile = new FileInfo(args[0]);
             using (var reader = inputFile.OpenText())
@@ -62,6 +74,12 @@ namespace Trakkr.Console
             foreach (var trakkrEntry in Trakkr<string>.Merge(entries))
             {
                 System.Console.WriteLine($"{trakkrEntry.Mark}: {(int)Math.Round(trakkrEntry.Duration.TotalMinutes)} Minutes");
+                var issues = issueManagement.GetIssuesBySearch(trakkrEntry.Mark);
+                foreach (var issue in issues)
+                {
+                    System.Console.WriteLine($"Issue: {issue.Id}");
+                }
+
             }
 
             System.Console.ReadLine();
