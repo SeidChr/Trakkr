@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:viewModels="clr-namespace:Trakkr.ViewModels"
              StartupUri="MainWindow.xaml">
-    <Application.Resources>
+    <!--<Application.Resources>
         <viewModels:MainViewModel x:Key="MainViewModel" />
-    </Application.Resources>
+    </Application.Resources>-->
 </Application>

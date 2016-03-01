@@ -28,14 +28,14 @@ namespace Trakkr
     /// </summary>
     public partial class MainWindow : Window
     {
-        private MainViewModel mainViewModel;
+        public MainViewModel MainViewModel { get; set; }
 
         private IEventRepository Repository { get; set; }
 
         public MainWindow()
         {
             InitializeComponent();
-            mainViewModel = App.Container.Resolve<MainViewModel>();
+            MainViewModel = App.Container.Resolve<MainViewModel>();
             Repository = App.Container.ResolveNamed<IEventRepository>("EventRepository");
         }
     }

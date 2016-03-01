@@ -1,7 +1,9 @@
 ﻿using System.ComponentModel.Composition.Hosting;
 using System.Windows;
+using System.Windows.Input;
 using Autofac;
 using Autofac.Integration.Mef;
+using Trakkr.Commands;
 using Trakkr.Model;
 using Trakkr.ViewModels;
 
@@ -25,12 +27,17 @@ namespace Trakkr
                 .ExternallyOwned();
 
             builder
-                .Register(b => b.Resolve<Application>().Resources["MainViewModel"])
-                .As<MainViewModel>()
-                .ExternallyOwned();
+                .RegisterType<MainViewModel>()
+                .AsSelf()
+                .PropertiesAutowired();
 
             builder.Register(b => b.ResolveKeyed<IEventRepository>("TextFile"))
                 .Named<IEventRepository>("EventRepository");
+
+            builder.RegisterType<EventCaptureSet>().As<IEventCaptureSet>();
+
+            builder.RegisterType<NextCommand>().Named<ICommand>("Next").PropertiesAutowired();
+            builder.RegisterType<PauseCommand>().Named<ICommand>("Pause").PropertiesAutowired();
 
             Container = builder.Build();
         }

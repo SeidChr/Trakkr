@@ -6,11 +6,19 @@ using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
+using Trakkr.Model;
 
 namespace Trakkr.ViewModels
 {
     public class EventViewModel
     {
+        public IEvent Event { get; set; }
+
+        public EventViewModel(IEvent @event)
+        {
+            Event = @event;
+        }
+
         public DateTime UtcTimestamp { get; set; } = DateTime.UtcNow;
 
         public DateTime LocaTimestamp
@@ -18,14 +26,7 @@ namespace Trakkr.ViewModels
             get { return UtcTimestamp.ToLocalTime(); }
             set { UtcTimestamp = value.ToUniversalTime(); }
         }
-
-        //public IEnumerable<ITrackingRepositoryReference> TrackingRepositoryReferenceses { get; set; } = new ITrackingRepositoryReference[0];
-
+        
         public string Description { get; set; }
-
     }
-
-    //public interface ITrackingRepositoryReference
-    //{
-    //}
 }

@@ -8,14 +8,9 @@ using Trakkr.ViewModels;
 
 namespace Trakkr.Commands
 {
-    class NextCommand : ICommand
+    internal class NextCommand : ICommand
     {
-        private MainViewModel ViewModel { get; set; }
-
-        public NextCommand(MainViewModel viewModel)
-        {
-            ViewModel = viewModel;
-        }
+        public MainViewModel ViewModel { get; set; }
 
         public bool CanExecute(object parameter)
         {
@@ -24,7 +19,7 @@ namespace Trakkr.Commands
 
         public void Execute(object parameter)
         {
-            ViewModel.
+            ViewModel.EventCaptureSet.Next();
         }
 
         public event EventHandler CanExecuteChanged;
