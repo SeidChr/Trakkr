@@ -4,6 +4,7 @@ using System.Dynamic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Xml.Linq;
 using Trakkr.Core;
 using Trakkr.YouTrack;
 using YouTrackSharp.Issues;
@@ -12,6 +13,18 @@ namespace Trakkr.Console
 {
     class Program
     {
+        private static readonly DateTime UnixEpoch =
+            new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        public static DateTime DateTimeFromUnixTimestampMillis(long millis)
+        {
+            return UnixEpoch.AddMilliseconds(millis);
+        }
+
+        public static long GetCurrentUnixTimestampSeconds(DateTime dateTime)
+        {
+            return (long)(dateTime - UnixEpoch).TotalSeconds;
+        }
+
         static void Main(string[] args)
         {
             List<TrakkrEntry<string>> entries = new List<TrakkrEntry<string>>();
@@ -95,11 +108,24 @@ namespace Trakkr.Console
 
             foreach (var trakkrEntry in Trakkr<string>.Merge(entries))
             {
-                System.Console.WriteLine($"{trakkrEntry.Mark}: {(int)Math.Round(trakkrEntry.Duration.TotalMinutes)} Minutes");
+                var minutes = (int) Math.Round(trakkrEntry.Duration.TotalMinutes);
+                System.Console.WriteLine($"{trakkrEntry.Mark}: {minutes} Minutes");
                 var issueExists = issueManagement.CheckIfIssueExists(trakkrEntry.Mark);
                 if (issueExists)
                 {
-                    System.Console.WriteLine($"Found that Issue: {trakkrEntry.Mark}");
+                    System.Console.Write($"Found that Issue: {trakkrEntry.Mark}. Add {minutes} minutes to it? Y/N");
+                    var key = System.Console.ReadKey(false);
+                    System.Console.WriteLine();
+                    if (key.Key == ConsoleKey.Y)
+                    {
+                        var doc = "<workItem>"
+                                  + $"<date>{GetCurrentUnixTimestampSeconds(trakkrEntry.Start)}</date>"
+                                  + $"<duration>{minutes}</duration>"
+                                  //+ "<description>first work item</description>"
+                                  + "</workItem>";
+                        connection.Post($"issue/{trakkrEntry.Mark}/timetracking/workitem", doc);
+                        //POST http://localhost:8081/rest/issue/HBR-63/timetracking/workitem
+                    }
 
                     //https://confluence.jetbrains.com/display/YTD6/Get+Available+Work+Items+of+Issue
 
@@ -110,14 +136,6 @@ namespace Trakkr.Console
                     // add a workitem
                     //connection.Post($"issue/{trakkrEntry.Mark}/timetracking/workitem", "<xml/>");
                     //POST http://localhost:8081/rest/issue/HBR-63/timetracking/workitem
-                    // <workItem>
-                    //   <date>1353316956611</date>
-                    //   <duration>240</duration>
-                    //   <description>first work item</description>
-                    //   <worktype>
-                    //     <name>Development</name>
-                    //   </worktype>
-                    // </workItem>
                 }
                 else
                 {
