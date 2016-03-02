@@ -52,6 +52,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Connection.cs" />
+    <Compile Include="IConnection.cs" />
     <Compile Include="YouTrackManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
