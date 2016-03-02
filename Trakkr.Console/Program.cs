@@ -15,15 +15,35 @@ namespace Trakkr.Console
         static void Main(string[] args)
         {
             List<TrakkrEntry<string>> entries = new List<TrakkrEntry<string>>();
-            System.Console.Write("Youtrack Host: ");
-            var host = System.Console.ReadLine();
-            System.Console.Write("Username: ");
-            var username = System.Console.ReadLine();
-            System.Console.Write("Password: ");
-            var password = System.Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(Properties.Settings.Default.Host))
+            {
+                System.Console.Write("Youtrack Host: ");
+                var host = System.Console.ReadLine();
+                Properties.Settings.Default.Host = host;
+            }
+
+            if (string.IsNullOrWhiteSpace(Properties.Settings.Default.Username))
+            {
+                System.Console.Write("Username: ");
+                var username = System.Console.ReadLine();
+                Properties.Settings.Default.Username = username;
+            }
+
+            if (string.IsNullOrWhiteSpace(Properties.Settings.Default.Password))
+            {
+                System.Console.Write("Password: ");
+                var password = System.Console.ReadLine();
+                Properties.Settings.Default.Password = password;
+            }
 
 
-            var connection = YouTrackManager.GetConnection(host, username, password);
+            var connection = YouTrackManager.GetConnection(Properties.Settings.Default.Host, Properties.Settings.Default.Username, Properties.Settings.Default.Password);
+
+            if (connection.IsAuthenticated)
+            {
+                Properties.Settings.Default.Save();
+            }
+
             var issueManagement = new IssueManagement(connection);
 
             var inputFile = new FileInfo(args[0]);
