@@ -65,6 +65,30 @@ namespace Trakkr.Core
             }
         }
 
+        //static TrakkrEntry<T> sumEntry = null;
+
+        //public static IEnumerable<TrakkrEntry<T>> Combine(IEnumerable<TrakkrEntry<T>> entries)
+        //{
+            
+        //    foreach (var trakkrEntry in entries)
+        //    {
+        //        if (sumEntry == null)
+        //        {
+        //            sumEntry = trakkrEntry;
+        //            yield break;
+        //        }
+
+        //        if (sumEntry.Mark.Equals(trakkrEntry.Mark))
+        //        {
+        //            sumEntry.End = trakkrEntry.End;
+        //            sumEntry.Duration = sumEntry.End - sumEntry.Start;
+        //            yield return sumEntry;
+        //            sumEntry = null;
+        //        }
+        //    }
+        //}
+
+
         public static IEnumerable<TrakkrEntry<T>> Merge(IEnumerable<TrakkrEntry<T>> entries)
         {
             return entries

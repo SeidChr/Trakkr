@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using Trakkr.Core;
 using Trakkr.YouTrack;
 using YouTrackSharp.Issues;
@@ -51,7 +53,7 @@ namespace Trakkr.Console
                             var eventTime = date.Add(time);
                             var ticket = timeSplit[1];
                             var isStopEvent = string.Equals(ticket, "stop");
-                            
+
                             if (isStopEvent)
                             {
                                 trakkrEntry = trakkr.HandleStopEvent(eventTime);
@@ -74,12 +76,45 @@ namespace Trakkr.Console
             foreach (var trakkrEntry in Trakkr<string>.Merge(entries))
             {
                 System.Console.WriteLine($"{trakkrEntry.Mark}: {(int)Math.Round(trakkrEntry.Duration.TotalMinutes)} Minutes");
-                var issues = issueManagement.GetIssuesBySearch(trakkrEntry.Mark);
-                foreach (var issue in issues)
+                var issueExists = issueManagement.CheckIfIssueExists(trakkrEntry.Mark);
+                if (issueExists)
                 {
-                    System.Console.WriteLine($"Issue: {issue.Id}");
-                }
+                    System.Console.WriteLine($"Found that Issue: {trakkrEntry.Mark}");
 
+                    //https://confluence.jetbrains.com/display/YTD6/Get+Available+Work+Items+of+Issue
+
+                    // get all workitems
+                    // GET /rest/issue/{issue}/timetracking/workitem/
+                    //var result = connection.Get<object>($"issue/{trakkrEntry.Mark}/timetracking/workitem/");
+
+                    // add a workitem
+                    //connection.Post($"issue/{trakkrEntry.Mark}/timetracking/workitem", "<xml/>");
+                    //POST http://localhost:8081/rest/issue/HBR-63/timetracking/workitem
+                    // <workItem>
+                    //   <date>1353316956611</date>
+                    //   <duration>240</duration>
+                    //   <description>first work item</description>
+                    //   <worktype>
+                    //     <name>Development</name>
+                    //   </worktype>
+                    // </workItem>
+                }
+                else
+                {
+                    var issues = issueManagement.GetIssuesBySearch(trakkrEntry.Mark);
+
+
+                    foreach (var issue in issues)
+                    {
+                        System.Console.WriteLine($"Issue: {issue.Id}");
+                        var members = issue.GetDynamicMemberNames();
+                        foreach (var member in members)
+                        {
+                            System.Console.WriteLine($"Member: {member}");
+                        }
+
+                    }
+                }
             }
 
             System.Console.ReadLine();
