@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Trakkr.YouTrack", "Trakkr.Y
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Trakkr.Core", "Trakkr.Core\Trakkr.Core.csproj", "{6672655E-118D-46F2-9E20-36C162879869}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Trakkr.Parse", "Trakkr.Parse\Trakkr.Parse.csproj", "{6C0B976E-A27A-4B76-9D4C-157E0BB0716F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{6672655E-118D-46F2-9E20-36C162879869}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6672655E-118D-46F2-9E20-36C162879869}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6672655E-118D-46F2-9E20-36C162879869}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6C0B976E-A27A-4B76-9D4C-157E0BB0716F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6C0B976E-A27A-4B76-9D4C-157E0BB0716F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6C0B976E-A27A-4B76-9D4C-157E0BB0716F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6C0B976E-A27A-4B76-9D4C-157E0BB0716F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

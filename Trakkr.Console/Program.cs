@@ -123,7 +123,7 @@ namespace Trakkr.Console
         private static List<TrakkrEntry<string>> ParseEvents(FileInfo inputFile)
         {
             List<TrakkrEntry<string>> entries = new List<TrakkrEntry<string>>();
-            
+                    
             using (var reader = inputFile.OpenText())
             {
                 // first line is date

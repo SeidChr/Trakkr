@@ -2,7 +2,7 @@
 
 namespace Trakkr.Core
 {
-    public class TrakkrEntry<T>
+    public class TrakkrEntry<T> : ITrakkrEntry<T>
     {
         public DateTime Day { get; set; }
 
