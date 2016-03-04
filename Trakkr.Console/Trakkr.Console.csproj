@@ -81,6 +81,10 @@
       <Project>{6672655e-118d-46f2-9e20-36c162879869}</Project>
       <Name>Trakkr.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Trakkr.Parse\Trakkr.Parse.csproj">
+      <Project>{6C0B976E-A27A-4B76-9D4C-157E0BB0716F}</Project>
+      <Name>Trakkr.Parse</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Trakkr.YouTrack\Trakkr.YouTrack.csproj">
       <Project>{7C776BA7-E205-4232-A948-494C4CDB9264}</Project>
       <Name>Trakkr.YouTrack</Name>

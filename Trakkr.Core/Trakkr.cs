@@ -1,50 +1,64 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Trakkr.Core.Events;
 
 namespace Trakkr.Core
 {
-    public class Trakkr<T> : ITrakkr<T>
+    public class Trakkr<TPayload> : ITrakkr<TPayload>
     {
         private DateTime lastEvent = DateTime.MaxValue;
         private TimeSpan duration = TimeSpan.Zero;
-        private T lastMark = default(T);
+        private TPayload lastPayload = default(TPayload);
 
-        public TrakkrEntry<T> HandleStartEvent(DateTime dateTime, T mark)
+
+        public IEntry<TPayload> HandleEvent(EventType type, DateTime timestamp, TPayload payload = default(TPayload))
         {
-            UpdateEventTime(dateTime);
-            var result = GetTrakkrEntry();
-            lastMark = mark;
+            UpdateEventTime(timestamp);
+            IEntry<TPayload> result = GetTrakkrEntry();
+
+            switch (type)
+            {
+                case EventType.Start:
+                    lastPayload = payload;
+                    break;
+                case EventType.Stop:
+                    Reset();
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(type));
+            }
+
             return result;
         }
 
-        public TrakkrEntry<T> HandleStopEvent(DateTime dateTime)
+        public IEntry<TPayload> HandleEvent(IEvent<TPayload> @event)
         {
-            UpdateEventTime(dateTime);
-            var result = GetTrakkrEntry();
-            Reset();
-            return result;
+            return HandleEvent(@event.Type, @event.Timestamp, @event.Payload);
+        }
+
+        public IEnumerable<IEntry<TPayload>> HandleEvents(IEnumerable<IEvent<TPayload>> events)
+        {
+            return events.Select(HandleEvent).Where(entry => entry != null);
         }
 
         private void Reset()
         {
             lastEvent = DateTime.MaxValue;
             duration = TimeSpan.Zero;
-            lastMark = default(T);
+            lastPayload = default(TPayload);
         }
 
-        private TrakkrEntry<T> GetTrakkrEntry()
+        private Entry<TPayload> GetTrakkrEntry()
         {
-            TrakkrEntry<T> result = null;
+            Entry<TPayload> result = null;
             if (duration > TimeSpan.Zero)
             {
-                result = new TrakkrEntry<T>
+                result = new Entry<TPayload>
                 {
-                    Day = lastEvent.Date,
-                    Start = lastEvent,
-                    End = lastEvent + duration,
+                    Timestamp = lastEvent,
                     Duration = duration,
-                    Mark = lastMark
+                    Payload = lastPayload
                 };
             }
 
@@ -55,7 +69,7 @@ namespace Trakkr.Core
         {
             if (lastEvent == DateTime.MaxValue)
             {
-                // first event
+                // first event after reset
                 lastEvent = dateTime;
             }
             else
@@ -69,7 +83,7 @@ namespace Trakkr.Core
 
         //public static IEnumerable<TrakkrEntry<T>> Combine(IEnumerable<TrakkrEntry<T>> entries)
         //{
-            
+
         //    foreach (var trakkrEntry in entries)
         //    {
         //        if (sumEntry == null)
@@ -88,18 +102,19 @@ namespace Trakkr.Core
         //    }
         //}
 
-
-        public static IEnumerable<TrakkrEntry<T>> Merge(IEnumerable<TrakkrEntry<T>> entries)
+        public static IEnumerable<Entry<TPayload>> Merge(IEnumerable<Entry<TPayload>> entries)
         {
             return entries
-                .GroupBy(e => e.Mark)
-                .Select(g => g.Aggregate(new TrakkrEntry<T>(), (seed, adder) =>
+                .GroupBy(e => e.Payload)
+                .Select(g => g.Aggregate(new Entry<TPayload>(), (seed, adder) =>
                 {
-                    seed.Day = adder.Day;
                     seed.Duration += adder.Duration;
-                    seed.Mark = adder.Mark;
-                    seed.Start = DateTime.MaxValue;
-                    seed.End = DateTime.MaxValue;
+                    seed.Payload = adder.Payload;
+                    if (seed.Timestamp == default(DateTime))
+                    {
+                        seed.Timestamp = adder.Timestamp;
+                    }
+
                     return seed;
                 }));
         }

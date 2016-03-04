@@ -1,20 +1,14 @@
 ﻿using System;
-using System.CodeDom;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
-using Trakkr.Model;
+
+using Trakkr.Core.Events;
 
 namespace Trakkr.ViewModels
 {
     public class EventViewModel
     {
-        public IEvent Event { get; set; }
+        public IEvent<string> Event { get; set; }
 
-        public EventViewModel(IEvent @event)
+        public EventViewModel(IEvent<string> @event)
         {
             Event = @event;
         }

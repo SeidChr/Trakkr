@@ -14,6 +14,6 @@ namespace Trakkr.ViewModels
 
         public ICommand Next { get; set; }
 
-        public IEventCaptureSet EventCaptureSet { get; set; }
+        public IEventCaptureSet<string> EventCaptureSet { get; set; }
     }
 }
