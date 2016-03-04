@@ -34,7 +34,7 @@ namespace Trakkr
             builder.Register(b => b.ResolveKeyed<IEventRepository>("TextFile"))
                 .Named<IEventRepository>("EventRepository");
 
-            builder.RegisterType<EventCaptureSet>().As<IEventCaptureSet>();
+            builder.RegisterType<EventCaptureSet>().As<IEventCaptureSet<string>>();
 
             builder.RegisterType<NextCommand>().Named<ICommand>("Next").PropertiesAutowired();
             builder.RegisterType<PauseCommand>().Named<ICommand>("Pause").PropertiesAutowired();

@@ -7,75 +7,60 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Trakkr.Core;
+using Trakkr.Core.Events;
 
 namespace Trakkr.Parse
 {
     public class ShortTrackingFormatParser : IEventParser<ShortTrackingFormatPayload, string>
     {
-        public IEnumerable<ITrakkrEntry<ShortTrackingFormatPayload>> Parse(string input)
+        public IEnumerable<IEvent<ShortTrackingFormatPayload>> Parse(string input)
         {
-            var days = Regex.Split(input, @"^(?=\d{4}-\d{2}-\d{2}$)", RegexOptions.Multiline | RegexOptions.CultureInvariant);
-            return days.SelectMany(d => ParseDay(d));
+            return Regex
+                .Split(input, @"^(?=\d{4}-\d{2}-\d{2}\s+)", RegexOptions.Multiline | RegexOptions.CultureInvariant)
+                .Where(s => !string.IsNullOrWhiteSpace(s))
+                .SelectMany(ParseDay);
         }
 
-        private IEnumerable<ITrakkrEntry<ShortTrackingFormatPayload>> ParseDay(string day)
+        private static IEnumerable<IEvent<ShortTrackingFormatPayload>> ParseDay(string dayString)
         {
-            yield break;
-        }
+            var reader = new StringReader(dayString);
 
-        private static List<TrakkrEntry<string>> ParseEvents(FileInfo inputFile)
-        {
-            List<TrakkrEntry<string>> entries = new List<TrakkrEntry<string>>();
-
-            
-            using (var reader = inputFile.OpenText())
+            // first line is date
+            var dateLine = reader.ReadLine();
+            DateTime date;
+            if (DateTime.TryParseExact(dateLine, "yyyy-MM-dd", null, DateTimeStyles.None, out date))
             {
-                var fileContent = reader.ReadToEnd();
-
-                // first line is date
-                var dateLine = reader.ReadLine();
-                DateTime date;
-                if (DateTime.TryParseExact(dateLine, "yyyy-MM-dd", null, DateTimeStyles.None, out date))
+                date = date.Date;
+                string timeLine;
+                string[] timeSplit;
+                while ((timeLine = reader.ReadLine()) != null)
                 {
-                    var trakkr = new Trakkr<string>();
-                    date = date.Date;
-                    string timeLine;
-                    string[] timeSplit;
-                    TrakkrEntry<string> trakkrEntry;
-                    while (!reader.EndOfStream)
+                    timeSplit = timeLine.Split(new []{' '}, 3);
+                
+                    if (timeSplit.Length >= 2)
                     {
-                        timeLine = reader.ReadLine();
-                        timeSplit = timeLine.Split(' ');
-                        if (timeSplit.Length < 2)
+                        var time = DateTime.ParseExact(timeSplit[0], "HHmm", null, DateTimeStyles.None).TimeOfDay;
+                        var eventTime = date.Add(time);
+                        var ticket = timeSplit[1];
+                        var description = string.Empty;
+                        if (timeSplit.Length > 2)
                         {
-                            System.Console.WriteLine("skipping line: " + timeLine);
+                            description = timeSplit[2];
                         }
-                        else
+                        var isStopEvent = string.Equals(ticket, "stop");
+                        yield return new Event<ShortTrackingFormatPayload>()
                         {
-                            var time = DateTime.ParseExact(timeSplit[0], "HHmm", null, DateTimeStyles.None).TimeOfDay;
-                            var eventTime = date.Add(time);
-                            var ticket = timeSplit[1];
-                            var isStopEvent = string.Equals(ticket, "stop");
-
-                            if (isStopEvent)
+                            Type = isStopEvent ? EventType.Stop : EventType.Start,
+                            Timestamp = eventTime,
+                            Payload = new ShortTrackingFormatPayload()
                             {
-                                trakkrEntry = trakkr.HandleStopEvent(eventTime);
-                            }
-                            else
-                            {
-                                trakkrEntry = trakkr.HandleStartEvent(eventTime, ticket);
-                            }
-
-                            if (trakkrEntry != null)
-                            {
-                                entries.Add(trakkrEntry);
-                            }
-                            //var comment = timeSplit[2];
-                        }
+                                Query = ticket,
+                                Descrition = description,
+                            },
+                        };
                     }
                 }
             }
-            return entries;
         }
     }
 }

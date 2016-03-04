@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using Trakkr.Core;
+using Trakkr.Core.Events;
 
 namespace Trakkr.Parse
 {
-    public interface IEventParser<TPayload, TIn>
+    public interface IEventParser<out TPayload, in TIn>
     {
-        IEnumerable<ITrakkrEntry<TPayload>> Parse(TIn input);
+        IEnumerable<IEvent<TPayload>> Parse(TIn input);
     }
 }

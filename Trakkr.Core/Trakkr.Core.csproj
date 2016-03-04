@@ -40,11 +40,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Events\BaseEvent.cs" />
+    <Compile Include="Events\Event.cs" />
+    <Compile Include="Events\EventType.cs" />
+    <Compile Include="Events\IBaseEvent.cs" />
     <Compile Include="ITrakkr.cs" />
-    <Compile Include="ITrakkrEntry.cs" />
+    <Compile Include="Events\IEntry.cs" />
+    <Compile Include="Events\IEvent.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Trakkr.cs" />
-    <Compile Include="TrakkrEntry.cs" />
+    <Compile Include="Events\Entry.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

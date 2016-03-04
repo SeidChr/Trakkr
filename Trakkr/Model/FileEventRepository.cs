@@ -6,25 +6,26 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Trakkr.Core.Events;
 
 namespace Trakkr.Model
 {
     [Export("TextFile", typeof(IEventRepository))]
     public class FileEventRepository : IEventRepository
     {
-        private string GetTextLineFromEvent(IEvent @event)
+        private string GetTextLineFromEvent(IEvent<string> @event)
         {
             throw new NotImplementedException();
         }
 
-        private static IEvent GetEventFromTextLine(string line)
+        private static IEvent<string> GetEventFromTextLine(string line)
         {
             throw new NotImplementedException();
         }
 
-        public void Store(IEnumerable<IEvent> events)
+        public void Store(IEnumerable<IEvent<string>> events)
         {
-            var eventListStartTime = events.FirstOrDefault()?.UtcTimestamp ?? DateTime.Now;
+            var eventListStartTime = events.FirstOrDefault()?.Timestamp ?? DateTime.Now;
             var file = GetFile(eventListStartTime);
             var writer = file.CreateText();
             foreach (var @event in events)
@@ -33,7 +34,7 @@ namespace Trakkr.Model
             }
         }
 
-        public IEnumerable<IEvent> Load()
+        public IEnumerable<IEvent<string>> Load()
         {
             var file = GetFile(DateTime.Now);
 
@@ -56,7 +57,7 @@ namespace Trakkr.Model
         private static string GetDirectoryPath()
             => Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 
-        private static string GetFileName(DateTime dateTime) 
+        private static string GetFileName(DateTime dateTime)
             => $"Trakkr_{dateTime.ToLocalTime().ToString("d", DateTimeFormatInfo.InvariantInfo)}.txt";
     }
 }

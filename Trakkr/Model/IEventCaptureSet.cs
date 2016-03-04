@@ -1,14 +1,15 @@
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
+using Trakkr.Core.Events;
 
 namespace Trakkr.Model
 {
-    public interface IEventCaptureSet
+    public interface IEventCaptureSet<out TPayload>
     {
-        IEvent Next();
+        IEvent<TPayload> Next();
 
-        IEvent Pause();
+        IEvent<TPayload> Pause();
 
-        IEnumerable<IEvent> Events { get; }
+        IEnumerable<IEvent<TPayload>> Events { get; }
     }
 }

@@ -4,24 +4,25 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Trakkr.Core.Events;
 
 namespace Trakkr.Model
 {
-    public class EventCaptureSet : IEventCaptureSet
+    public class EventCaptureSet : IEventCaptureSet<string>
     {
-        private ObservableCollection<IEvent> events;
+        private readonly ObservableCollection<IEvent<string>> events;
 
         public EventCaptureSet()
         {
-            events = new ObservableCollection<IEvent>();
-            Events = new ReadOnlyObservableCollection<IEvent>(events);
+            events = new ObservableCollection<IEvent<string>>();
+            Events = new ReadOnlyObservableCollection<IEvent<string>>(events);
         }
 
-        public IEvent Next()
+        public IEvent<string> Next()
         {
             var result = new Event
             {
-                Type = EventType.Next,
+                Type = EventType.Start,
             };
 
             events.Add(result);
@@ -29,11 +30,11 @@ namespace Trakkr.Model
             return result;
         }
 
-        public IEvent Pause()
+        public IEvent<string> Pause()
         {
             var result = new Event
             {
-                Type = EventType.Pause,
+                Type = EventType.Stop,
             };
 
             events.Add(result);
@@ -41,6 +42,6 @@ namespace Trakkr.Model
             return result;
         }
 
-        public IEnumerable<IEvent> Events { get; }
+        public IEnumerable<IEvent<string>> Events { get; }
     }
 }

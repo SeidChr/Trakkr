@@ -8,8 +8,8 @@ namespace Trakkr.Parse
 {
     public struct ShortTrackingFormatPayload
     {
-        string Query { get; set; }
+        public string Query { get; set; }
 
-        string Descrition { get; set; }
+        public string Descrition { get; set; }
     }
 }

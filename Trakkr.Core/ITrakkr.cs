@@ -1,10 +1,10 @@
 using System;
+using Trakkr.Core.Events;
 
 namespace Trakkr.Core
 {
-    public interface ITrakkr<T>
+    public interface ITrakkr<TPayload>
     {
-        TrakkrEntry<T> HandleStartEvent(DateTime dateTime, T mark);
-        TrakkrEntry<T> HandleStopEvent(DateTime dateTime);
+        IEntry<TPayload> HandleEvent(IEvent<TPayload> @event);
     }
 }
