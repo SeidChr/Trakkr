@@ -45,6 +45,7 @@
     <Compile Include="Events\EventType.cs" />
     <Compile Include="Events\IBaseEvent.cs" />
     <Compile Include="IRepository.cs" />
+    <Compile Include="IRepositoryPayload.cs" />
     <Compile Include="ITrakkr.cs" />
     <Compile Include="Events\IEntry.cs" />
     <Compile Include="Events\IEvent.cs" />

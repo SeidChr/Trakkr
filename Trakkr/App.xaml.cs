@@ -1,11 +1,13 @@
-﻿using System.ComponentModel.Composition.Hosting;
+﻿using System;
+using System.ComponentModel.Composition.Hosting;
 using System.Windows;
 using System.Windows.Input;
 using Autofac;
 using Autofac.Integration.Mef;
-using Trakkr.Commands;
-using Trakkr.Model;
-using Trakkr.ViewModels;
+using Trakkr.Core;
+using Trakkr.Core.Events;
+using Trakkr.ViewModel;
+using Trakkr.YouTrack;
 
 namespace Trakkr
 {
@@ -27,18 +29,52 @@ namespace Trakkr
                 .ExternallyOwned();
 
             builder
-                .RegisterType<MainViewModel>()
+                .Register(b => new MainViewModel())
+                .OnActivating(e =>
+                {
+                    e.Instance.StartCommand = e.Context.Resolve<StartCommand>();
+                    e.Instance.StopCommand = e.Context.Resolve<StopCommand>();
+                })
                 .AsSelf()
-                .PropertiesAutowired();
+                .InstancePerLifetimeScope();
 
-            builder.Register(b => b.ResolveKeyed<IEventRepository>("TextFile"))
-                .Named<IEventRepository>("EventRepository");
+            builder
+                .RegisterType<YouTrackPayload>()
+                .As<IRepositoryPayload>()
+                .InstancePerDependency();
 
-            builder.RegisterType<EventCaptureSet>().As<IEventCaptureSet<string>>();
+            builder
+                .RegisterType<StartCommand>()
+                .OnActivated(e =>
+                {
+                    e.Instance.MainViewModel = e.Context.Resolve<MainViewModel>();
+                    e.Instance.StartEventFactory =
+                        () => new TrakkrEventViewModel
+                        {
+                            Type = EventType.Start,
+                            Timestamp = DateTime.Now,
+                            Payload = Container.Resolve<IRepositoryPayload>()
+                        };
+                })
+                .AsSelf()
+                .InstancePerLifetimeScope();
 
-            builder.RegisterType<NextCommand>().Named<ICommand>("Next").PropertiesAutowired();
-            builder.RegisterType<PauseCommand>().Named<ICommand>("Pause").PropertiesAutowired();
-
+            builder
+                .RegisterType<StopCommand>()
+                .OnActivated(e =>
+                {
+                    e.Instance.MainViewModel = e.Context.Resolve<MainViewModel>();
+                    e.Instance.StopEventFactory =
+                        () => new TrakkrEventViewModel
+                        {
+                            Type = EventType.Stop,
+                            Timestamp = DateTime.Now,
+                            Payload = Container.Resolve<IRepositoryPayload>()
+                        };
+                })
+                .AsSelf()
+                .InstancePerLifetimeScope();
+        
             Container = builder.Build();
         }
 

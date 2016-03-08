@@ -56,9 +56,16 @@
     <Compile Include="IConnection.cs" />
     <Compile Include="YouTrackManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="YouTrackPayload.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Trakkr.Core\Trakkr.Core.csproj">
+      <Project>{6672655E-118D-46F2-9E20-36C162879869}</Project>
+      <Name>Trakkr.Core</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
