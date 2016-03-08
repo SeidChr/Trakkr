@@ -10,8 +10,12 @@ namespace Trakkr.Core
     {
         string Query { get; set; }
 
+        string Description { get; set; }
+
         string TicketId { get; set; }
 
         string WorkItemId { get; set; }
+
+        IRepository<string, IRepositoryPayload> Repository { get; set; }
     }
 }

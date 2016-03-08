@@ -1,4 +1,5 @@
-﻿using Trakkr.Core;
+﻿using System.Collections.Generic;
+using Trakkr.Core;
 using Trakkr.Core.Events;
 
 namespace Trakkr.ViewModel
@@ -21,6 +22,11 @@ namespace Trakkr.ViewModel
                 }
                 return result;
             }
+        }
+
+        public IEnumerable<string> FoundTickets
+        {
+            get { return Payload.Repository.FindTickets(Payload.Query); }
         }
     }
 }

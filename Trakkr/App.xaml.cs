@@ -39,7 +39,13 @@ namespace Trakkr
                 .InstancePerLifetimeScope();
 
             builder
+                .RegisterType(typeof (YouTrackRepository))
+                .As(typeof(IRepository<string, IRepositoryPayload>))
+                .InstancePerLifetimeScope();
+
+            builder
                 .RegisterType<YouTrackPayload>()
+                .OnActivated(e=>e.Instance.Repository = e.Context.Resolve<IRepository<string, IRepositoryPayload>>())
                 .As<IRepositoryPayload>()
                 .InstancePerDependency();
 
