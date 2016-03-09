@@ -27,6 +27,9 @@ namespace Trakkr.ViewModel
         public ICommand StartCommand { get; set; }
 
         public ICommand StopCommand { get; set; }
+
+        public ICommand SearchCommand { get; set; }
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         [NotifyPropertyChangedInvocator]

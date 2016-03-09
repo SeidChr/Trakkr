@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Web;
 using System.Xml.Linq;
 using JsonFx.Serialization.GraphCycles;
 using Trakkr.Core;
@@ -38,20 +39,23 @@ namespace Trakkr.Console
             }
             else
             {
+                System.Console.WriteLine("USER: " + Properties.Settings.Default.Username);
+                System.Console.WriteLine("HOST: " + Properties.Settings.Default.Host + ":" + Properties.Settings.Default.Port);
+
                 var inputFile = new FileInfo(args[0]);
+                var namePart = Path.Combine(Path.GetDirectoryName(inputFile.FullName), Path.GetFileNameWithoutExtension(inputFile.FullName));
+                var logfileName = namePart + ".log";
+
+                System.Console.WriteLine("LOG : " + logfileName);
 
                 var connection = Authenticate();
-
                 var entries = ParseEvents(inputFile);
 
-                var log = UpdateWorkItems(connection, entries);
-                var namePart = Path.Combine(Path.GetDirectoryName(inputFile.FullName), Path.GetFileNameWithoutExtension(inputFile.FullName));
+                var logger = new FileAppendLogger(logfileName, $"Updating Workitems : {DateTime.Now.ToString("O")}");
 
-                System.Console.WriteLine("Save log to: " + namePart + ".log");
+                UpdateWorkItems(connection, entries, logger);
 
-                //inputFile.MoveTo(namePart + ".done");
-                File.AppendAllLines(namePart + ".log", log);
-
+                System.Console.WriteLine("Done (press any key).");
                 System.Console.ReadKey(true);
             }
         }
@@ -78,13 +82,8 @@ namespace Trakkr.Console
             return expando.ToDictionary(kvp => kvp.Key, kvp => (string)kvp.Value);
         }
 
-        private static IEnumerable<string> UpdateWorkItems(IConnection connection, IEnumerable<IEntry<ShortTrackingFormatPayload>> entries)
+        private static void UpdateWorkItems(IConnection connection, IEnumerable<IEntry<ShortTrackingFormatPayload>> entries, FileAppendLogger logger)
         {
-            var log = new List<string>
-            {
-                $"Updating Workitems : {DateTime.Now.ToString("O")}"
-            };
-
             var issueManagement = new IssueManagement(connection);
             foreach (var trakkrEntry in entries)
             {
@@ -100,29 +99,39 @@ namespace Trakkr.Console
 
                     System.Console.Write($"{trakkrEntry.Timestamp.ToShortDateString()} : {trakkrEntry.Payload.Query} {summary} : {minutes} Minutes ({trakkrEntry.Payload.Descrition}). Add (y/n) ? ");
                     var key = System.Console.ReadKey(false);
-                    System.Console.WriteLine();
+                    System.Console.Write(" ");
 
                     if (key.Key == ConsoleKey.Y)
                     {
                         var doc = "<workItem>"
                                   + $"<date>{GetUnixTimestampMilliseconds(trakkrEntry.Timestamp)}</date>"
                                   + $"<duration>{minutes}</duration>"
-                                  + $"<description>{trakkrEntry.Payload.Descrition}</description>"
+                                  + $"<description>{HttpUtility.HtmlEncode(trakkrEntry.Payload.Descrition)}</description>"
                                   + "</workItem>";
 
                         var response = connection.PostXml($"issue/{trakkrEntry.Payload.Query}/timetracking/workitem", doc);
                         if (response.StatusCode == HttpStatusCode.Created)
                         {
-                            System.Console.WriteLine($"Work item saved here: {response.Location}");
-                            log.Add($"Ticket {trakkrEntry.Payload.Query} ({trakkrEntry.Payload.Descrition}) : {minutes}m : {response.Location}");
+                            logger.Log($"Ticket {trakkrEntry.Payload.Query} ({trakkrEntry.Payload.Descrition}) : {minutes}m : {response.Location}");
+                            System.Console.Write("SAVED!");
+                        }
+                        else
+                        {
+                            System.Console.Write($"ERROR! Response Code: {response.StatusCode}");
+                            logger.Log($"Ticket {trakkrEntry.Payload.Query} ({trakkrEntry.Payload.Descrition})" +
+                                       $" : {minutes}m" +
+                                       $" : ERROR! Response Code: {response.StatusCode}");
                         }
 
                         //POST http://localhost:8081/rest/issue/HBR-63/timetracking/workitem
                     }
                     else
                     {
-                        log.Add($"Ticket {trakkrEntry.Payload.Query} : {minutes}m : NOT ADDED!");
+                        System.Console.Write("NOT ADDED.");
+                        logger.Log($"Ticket {trakkrEntry.Payload.Query} : {minutes}m : NOT ADDED!");
                     }
+
+                    System.Console.WriteLine();
 
                     //https://confluence.jetbrains.com/display/YTD6/Get+Available+Work+Items+of+Issue
 
@@ -136,9 +145,12 @@ namespace Trakkr.Console
                 }
                 else
                 {
-                    var message = $"Unable to find issue {trakkrEntry.Payload.Query}";
+                    var message = $"Ticket {trakkrEntry.Payload.Query} ({trakkrEntry.Payload.Descrition})" +
+                       $" : {minutes}m" +
+                       " : ERROR! TICKET NOT FOUND!";
+
                     System.Console.WriteLine(message);
-                    log.Add(message);
+                    logger.Log(message);
 
                     //var issues = issueManagement.GetIssuesBySearch(trakkrEntry.Mark);
                     //foreach (var issue in issues)
@@ -153,8 +165,6 @@ namespace Trakkr.Console
                     //}
                 }
             }
-
-            return log;
         }
 
         private static IEnumerable<IEntry<ShortTrackingFormatPayload>> ParseEvents(FileInfo inputFile)

@@ -5,15 +5,26 @@ using System.Text;
 using System.Threading.Tasks;
 using Trakkr.Core;
 using Trakkr.Core.Events;
+using YouTrackSharp.Issues;
 
 namespace Trakkr.YouTrack
 {
     public class YouTrackRepository : IRepository<string, IRepositoryPayload>
     {
+        private readonly IssueManagement issueManagement;
+
+        public YouTrackRepository(IssueManagement issueManagement)
+        {
+            this.issueManagement = issueManagement;
+        }
+
         public IEnumerable<string> FindTickets(string query)
         {
-            yield return "a";
-            yield return "b";
+            return issueManagement
+                .GetIssuesBySearch(query)
+                .Cast<dynamic>()
+                .Select(issue => issue.Id + ": " + issue.summary)
+                .Cast<string>();
         }
 
         public bool HasTicket(string ticketId)

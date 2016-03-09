@@ -15,7 +15,5 @@ namespace Trakkr.Core
         string TicketId { get; set; }
 
         string WorkItemId { get; set; }
-
-        IRepository<string, IRepositoryPayload> Repository { get; set; }
     }
 }
