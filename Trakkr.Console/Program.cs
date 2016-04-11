@@ -33,30 +33,59 @@ namespace Trakkr.Console
 
         static void Main(string[] args)
         {
-            if (args[0] == "RESET")
+            System.Console.Write("R for RESET, Any other key to READ A FILE... ");
+            var keyInfo = System.Console.ReadKey();
+            System.Console.WriteLine();
+
+            if (keyInfo.Key == ConsoleKey.R || (args.Length > 0 && args[0] == "RESET"))
             {
                 ResetSettings();
             }
             else
             {
+                var connection = Authenticate();
+
                 System.Console.WriteLine("USER: " + Properties.Settings.Default.Username);
                 System.Console.WriteLine("HOST: " + Properties.Settings.Default.Host + ":" + Properties.Settings.Default.Port);
 
-                var inputFile = new FileInfo(args[0]);
-                var namePart = Path.Combine(Path.GetDirectoryName(inputFile.FullName), Path.GetFileNameWithoutExtension(inputFile.FullName));
-                var logfileName = namePart + ".log";
+                FileInfo inputFile = null;
+                if (args.Length >= 1)
+                {
+                    inputFile = new FileInfo(args[0]);
+                }
+                else
+                {
+                    System.Console.Write("Please enter InputFile: ");
+                    var inputFileName = System.Console.ReadLine();
+                    inputFileName = inputFileName.Trim(' ', '\"');
+                    inputFile = new FileInfo(inputFileName);
+                    inputFile.Refresh();
+                }
 
-                System.Console.WriteLine("LOG : " + logfileName);
+                //if (inputFile.Exists)
+                //{
+                //    System.Console.WriteLine("No input file given. Nothing to do.");
+                //    System.Console.WriteLine($"File {inputFile.FullName} does not exist.");
+                //    System.Console.Write("Press any key to exit.");
+                //    System.Console.ReadKey(true);
+                //}
+                //else
+                {
+                    var namePart = Path.Combine(Path.GetDirectoryName(inputFile.FullName), Path.GetFileNameWithoutExtension(inputFile.FullName));
+                    var logfileName = namePart + ".log";
 
-                var connection = Authenticate();
-                var entries = ParseEvents(inputFile);
+                    System.Console.WriteLine("LOG : " + logfileName);
 
-                var logger = new FileAppendLogger(logfileName, $"Updating Workitems : {DateTime.Now.ToString("O")}");
+                    
+                    var entries = ParseEvents(inputFile);
 
-                UpdateWorkItems(connection, entries, logger);
+                    var logger = new FileAppendLogger(logfileName, $"Updating Workitems : {DateTime.Now.ToString("O")}");
 
-                System.Console.WriteLine("Done (press any key).");
-                System.Console.ReadKey(true);
+                    UpdateWorkItems(connection, entries, logger);
+
+                    System.Console.WriteLine("Done (press any key).");
+                    System.Console.ReadKey(true);
+                }
             }
         }
 
