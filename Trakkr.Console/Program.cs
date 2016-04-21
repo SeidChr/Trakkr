@@ -34,7 +34,7 @@ namespace Trakkr.Console
         static void Main(string[] args)
         {
             System.Console.Write("R for RESET, Any other key to READ A FILE... ");
-            var keyInfo = System.Console.ReadKey();
+            var keyInfo = System.Console.ReadKey(true);
             System.Console.WriteLine();
 
             if (keyInfo.Key == ConsoleKey.R || (args.Length > 0 && args[0] == "RESET"))
@@ -230,6 +230,19 @@ namespace Trakkr.Console
             {
                 System.Console.WriteLine($"There are entries that are longer than {maxTicketDuration.TotalHours} hours.");
                 @continue = false;
+            }
+
+            var last = DateTime.MinValue;
+            foreach (var current in entries.Select(entry => entry.Timestamp))
+            {
+                if (current < last)
+                {
+                    System.Console.WriteLine("The entries are not propperly ordered.");
+                    @continue = false;
+                    break;
+                }
+
+                last = current;
             }
 
             if (!@continue)
