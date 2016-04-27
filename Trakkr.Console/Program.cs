@@ -220,9 +220,11 @@ namespace Trakkr.Console
                 @continue = false;
             }
 
-            if (entries.Any(e => !CheckIfIssueExists(issueManagement, e.Payload.Query)))
+            var entryExistence = entries.Select(e => new {e.Payload.Query, Exists = CheckIfIssueExists(issueManagement, e.Payload.Query)}).ToList();
+            if (entryExistence.Any(e => !e.Exists))
             {
-                System.Console.WriteLine("There are entries that cannot be found.");
+                var ticketQueries = string.Join(", ", entryExistence.Where(e => !e.Exists).Select(e => e.Query));
+                System.Console.WriteLine($"There are entries that cannot be found: {ticketQueries}");
                 @continue = false;
             }
 
