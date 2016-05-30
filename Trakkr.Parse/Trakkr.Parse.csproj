@@ -9,8 +9,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Trakkr.Parse</RootNamespace>
     <AssemblyName>Trakkr.Parse</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -47,7 +48,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Trakkr.Core\Trakkr.Core.csproj">
-      <Project>{6672655e-118d-46f2-9e20-36c162879869}</Project>
+      <Project>{2f67edc6-c15b-4a33-8631-4d31f6151644}</Project>
       <Name>Trakkr.Core</Name>
     </ProjectReference>
   </ItemGroup>

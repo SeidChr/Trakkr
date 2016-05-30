@@ -12,6 +12,6 @@ namespace Trakkr.Core
 
         string TicketId { get; set; }
 
-        string WorkItemId { get; set; }
+        string EventId { get; set; }
     }
 }

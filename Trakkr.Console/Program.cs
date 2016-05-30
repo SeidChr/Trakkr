@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Dynamic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Xml.Linq;
-using JsonFx.Serialization.GraphCycles;
 using Trakkr.Core;
 using Trakkr.Core.Events;
 using Trakkr.Parse;
@@ -45,7 +41,9 @@ namespace Trakkr.Console
                 var entries = ParseEvents(inputFile);
 
                 var log = UpdateWorkItems(connection, entries);
-                var namePart = Path.Combine(Path.GetDirectoryName(inputFile.FullName), Path.GetFileNameWithoutExtension(inputFile.FullName));
+                var namePart = Path.Combine(
+                    Path.GetDirectoryName(inputFile.FullName), 
+                    Path.GetFileNameWithoutExtension(inputFile.FullName));
 
                 System.Console.WriteLine("Save log to: " + namePart + ".log");
 
