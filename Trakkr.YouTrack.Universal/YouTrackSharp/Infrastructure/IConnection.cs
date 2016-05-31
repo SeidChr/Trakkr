@@ -33,7 +33,7 @@
 
 using System.Collections.Generic;
 using System.Net;
-using YouTrackSharp.Admin;
+using Trakkr.YouTrack.Universal.YouTrackSharp.Admin;
 using YouTrackSharp.Projects;
 
 namespace YouTrackSharp.Infrastructure
@@ -47,7 +47,7 @@ namespace YouTrackSharp.Infrastructure
         dynamic Post(string command, object data, string accept);
         void Authenticate(string username, string password);
         void Logout();
-        User GetCurrentAuthenticatedUser();
+        IUser GetCurrentAuthenticatedUser();
         void PostFile(string command, string path);
         void Head(string command);
         void Post(string command, object data);

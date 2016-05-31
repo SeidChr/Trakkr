@@ -31,30 +31,21 @@
 
 #endregion
 
-using System;
-
-namespace YouTrackSharp.Infrastructure
+namespace Trakkr.YouTrack.Universal.YouTrackSharp.Infrastructure
 {
     public class DefaultUriConstructor : IUriConstructor
     {
-        readonly string _host;
-        readonly string _path;
-        readonly int _port;
-        readonly string _protocol;
+        private readonly string host;
+        private readonly string path;
+        private readonly int port;
+        private readonly string protocol;
 
         public DefaultUriConstructor(string protocol, string host, int port, string path)
         {
-            _protocol = protocol;
-            _port = port;
-            _host = host;
-            if (!String.IsNullOrEmpty(path))
-            {
-                _path = AddPrefixBar(path);
-            }
-            else
-            {
-                _path = "";
-            }
+            this.protocol = protocol;
+            this.port = port;
+            this.host = host;
+            this.path = !string.IsNullOrEmpty(path) ? AddPrefixBar(path) : "";
         }
 
 
@@ -65,19 +56,22 @@ namespace YouTrackSharp.Infrastructure
         /// <returns>Uri</returns>
         public string ConstructBaseUri(string request)
         {
-            return String.Format("{0}://{1}:{2}{3}/rest/{4}", _protocol, _host, _port, _path, request);
+            return $"{protocol}://{host}:{port}{path}/rest/{request}";
         }
 
-        string AddPrefixBar(string path)
+        private static string AddPrefixBar(string prefixPath)
         {
-            if (path.Length > 0)
+            if (prefixPath.Length <= 0)
             {
-                if (path[0] != '/')
-                {
-                    return '/' + path;
-                }
+                return prefixPath;
             }
-            return path;
+
+            if (prefixPath[0] != '/')
+            {
+                return '/' + prefixPath;
+            }
+
+            return prefixPath;
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace Trakkr.YouTrack
+﻿namespace Trakkr.YouTrack.Universal
 {
     public static class YouTrackManager
     {

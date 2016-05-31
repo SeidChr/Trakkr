@@ -1,14 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using EasyHttp.Http;
-
-namespace Trakkr.YouTrack
+﻿namespace Trakkr.YouTrack.Universal
 {
-    public interface IConnection : YouTrackSharp.Infrastructure.IConnection
+    public interface IConnection
     {
-        HttpResponse PostXml(string command, string data);
+        bool PostXml(string command, string data);
     }
 }

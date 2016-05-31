@@ -37,157 +37,160 @@ using System.Dynamic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
-using System.Security.Authentication;
-using EasyHttp.Http;
-using EasyHttp.Infrastructure;
-using YouTrackSharp.Admin;
-using YouTrackSharp.Infrastructure;
-using YouTrackSharp.Projects;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Threading.Tasks;
+using Windows.Data.Json;
+using Trakkr.YouTrack.Universal.YouTrackSharp.Admin;
+using Trakkr.YouTrack.Universal.YouTrackSharp.Infrastructure;
 
-namespace Trakkr.YouTrack
+//using System.Security.Authentication;
+//using EasyHttp.Http;
+//using EasyHttp.Infrastructure;
+//using YouTrackSharp.Admin;
+//using YouTrackSharp.Infrastructure;
+//using YouTrackSharp.Projects;
+
+namespace Trakkr.YouTrack.Universal
 {
     public class Connection : IConnection
     {
-        readonly string _host;
-        readonly int _port;
-        readonly IUriConstructor _uriConstructor;
-        CookieCollection _authenticationCookie;
-        string _username;
+        private readonly IUriConstructor uriConstructor;
+        private CookieCollection authenticationCookie;
+        private string username;
 
-        public Connection(string host, int port = 80, bool useSSL = false, string path = null)
+        private HttpClient client;
+
+        public Connection(string host, int port = 80, bool useSsl = false, string path = null)
         {
             var protocol = "http";
 
-            _host = host;
-            _port = port;
-
-
-            if (useSSL)
+            if (useSsl)
             {
                 protocol = "https";
             }
 
-            _uriConstructor = new DefaultUriConstructor(protocol, _host, _port, path);
+            uriConstructor = new DefaultUriConstructor(protocol, host, port, path);
         }
 
         public HttpStatusCode HttpStatusCode { get; private set; }
 
-        public HttpResponse PostXml(string command, string xmlData)
+        public bool PostXml(string command, string xmlData)
         {
-            // This actually doesn't return Application/XML...Bug in YouTrack
-            var httpRequest = MakePostXmlRequest(command, xmlData, HttpContentTypes.ApplicationXml);
+            //// This actually doesn't return Application/XML...Bug in YouTrack
+            //var httpRequest = MakePostXmlRequest(command, xmlData, HttpContentTypes.ApplicationXml);
 
-            return httpRequest.Response;
+            //return httpRequest.Response;
         }
 
         HttpClient MakePostXmlRequest(string command, object data, string accept)
         {
-            var httpRequest = CreateHttpRequest();
+            //var httpRequest = Client();
 
-            httpRequest.Request.Accept = accept;
+            //httpRequest.Request.Accept = accept;
 
-            httpRequest.Post(_uriConstructor.ConstructBaseUri(command), data,
-                             HttpContentTypes.ApplicationXml);
+            //httpRequest.Post(uriConstructor.ConstructBaseUri(command), data,
+            //                 HttpContentTypes.ApplicationXml);
 
-            HttpStatusCode = httpRequest.Response.StatusCode;
+            //HttpStatusCode = httpRequest.Response.StatusCode;
 
-            return httpRequest;
+            //return httpRequest;
         }
 
         public T Get<T>(string command)
         {
-            var httpRequest = CreateHttpRequest();
+            //var httpRequest = Client();
 
 
-            try
-            {
-                var staticBody = httpRequest.Get(_uriConstructor.ConstructBaseUri(command)).StaticBody<T>();
+            //try
+            //{
+            //    var staticBody = httpRequest.Get(uriConstructor.ConstructBaseUri(command)).StaticBody<T>();
 
-                HttpStatusCode = httpRequest.Response.StatusCode;
+            //    HttpStatusCode = httpRequest.Response.StatusCode;
 
-                return staticBody;
-            }
-            catch (HttpException httpException)
-            {
-                if (httpException.StatusCode == HttpStatusCode.Forbidden)
-                {
-                    throw new InvalidRequestException("Not enogh Rights");
-                }
-                throw;
-            }
+            //    return staticBody;
+            //}
+            //catch (HttpException httpException)
+            //{
+            //    if (httpException.StatusCode == HttpStatusCode.Forbidden)
+            //    {
+            //        throw new InvalidRequestException("Not enogh Rights");
+            //    }
+            //    throw;
+            //}
         }
 
         public IEnumerable<TInternal> Get<TWrapper, TInternal>(string command) where TWrapper : class, IDataWrapper<TInternal>
         {
-            var response = Get<TWrapper>(command);
+            //var response = Get<TWrapper>(command);
 
-            if (response != null)
-            {
-                return response.Data;
-            }
-            return new List<TInternal>();
+            //if (response != null)
+            //{
+            //    return response.Data;
+            //}
+            //return new List<TInternal>();
         }
 
 
         public void PostFile(string command, string path)
         {
-            var httpRequest = CreateHttpRequest();
+            //var httpRequest = Client();
 
-            httpRequest.Request.Accept = HttpContentTypes.ApplicationXml;
-
-
-            var contentType = GetFileContentType(path);
-
-            var files = new List<FileData>() { new FileData() { FieldName = "file", Filename = path, ContentTransferEncoding = "binary", ContentType = contentType } };
+            //httpRequest.Request.Accept = HttpContentTypes.ApplicationXml;
 
 
-            httpRequest.Post(_uriConstructor.ConstructBaseUri(command), null, files);
-            HttpStatusCode = httpRequest.Response.StatusCode;
+            //var contentType = GetFileContentType(path);
+
+            //var files = new List<FileData>() { new FileData() { FieldName = "file", Filename = path, ContentTransferEncoding = "binary", ContentType = contentType } };
+
+
+            //httpRequest.Post(uriConstructor.ConstructBaseUri(command), null, files);
+            //HttpStatusCode = httpRequest.Response.StatusCode;
         }
 
         public void Head(string command)
         {
-            var httpRequest = CreateHttpRequest();
+            //var httpRequest = Client();
 
-            httpRequest.Head(_uriConstructor.ConstructBaseUri(command));
-            HttpStatusCode = httpRequest.Response.StatusCode;
+            //httpRequest.Head(uriConstructor.ConstructBaseUri(command));
+            //HttpStatusCode = httpRequest.Response.StatusCode;
         }
 
         public void Put(string command, object data)
         {
-            var httpRequest = CreateHttpRequest();
+            //var httpRequest = Client();
 
-            httpRequest.Request.Accept = HttpContentTypes.ApplicationXml;
+            //httpRequest.Request.Accept = HttpContentTypes.ApplicationXml;
 
-            httpRequest.Put(_uriConstructor.ConstructBaseUri(command), data,
-                             HttpContentTypes.ApplicationXWwwFormUrlEncoded);
+            //httpRequest.Put(uriConstructor.ConstructBaseUri(command), data,
+            //                 HttpContentTypes.ApplicationXWwwFormUrlEncoded);
 
-            HttpStatusCode = httpRequest.Response.StatusCode;
+            //HttpStatusCode = httpRequest.Response.StatusCode;
         }
 
         public void Delete(string command)
         {
-            var httpRequest = CreateHttpRequest();
+            //var httpRequest = Client();
 
-            httpRequest.Request.Accept = HttpContentTypes.ApplicationXml;
+            //httpRequest.Request.Accept = HttpContentTypes.ApplicationXml;
 
-            var constructBaseUri = _uriConstructor.ConstructBaseUri(command);
-            httpRequest.Delete(constructBaseUri);
+            //var constructBaseUri = uriConstructor.ConstructBaseUri(command);
+            //httpRequest.Delete(constructBaseUri);
 
-            HttpStatusCode = httpRequest.Response.StatusCode;
+            //HttpStatusCode = httpRequest.Response.StatusCode;
         }
 
         public void Post(string command, object data)
         {
             // This actually doesn't return Application/XML...Bug in YouTrack
-            MakePostRequest(command, data, HttpContentTypes.ApplicationXml);
+            //MakePostRequest(command, data, HttpContentTypes.ApplicationXml);
         }
 
         public dynamic Post(string command, object data, string accept)
         {
-            var httpRequest = MakePostRequest(command, data, accept);
+            //var httpRequest = MakePostRequest(command, data, accept);
 
-            return httpRequest.Response.DynamicBody;
+            //return httpRequest.Response.DynamicBody;
         }
 
         public void Authenticate(NetworkCredential credentials)
@@ -198,128 +201,140 @@ namespace Trakkr.YouTrack
         public void Authenticate(string username, string password)
         {
             IsAuthenticated = false;
-            _username = String.Empty;
-            _authenticationCookie = null;
+            this.username = String.Empty;
+            authenticationCookie = null;
 
             dynamic credentials = new ExpandoObject();
 
             credentials.login = username;
             credentials.password = password;
 
-            try
-            {
-                HttpClient response = MakePostRequest("user/login", credentials, HttpContentTypes.ApplicationXml);
+            //try
+            //{
+            //    HttpClient response = MakePostRequest("user/login", credentials, HttpContentTypes.ApplicationXml);
 
-                if (response.Response.StatusCode == HttpStatusCode.OK)
-                {
-                    if (String.Compare(response.Response.DynamicBody.login, "ok", StringComparison.CurrentCultureIgnoreCase) != 0)
-                    {
-                        throw new AuthenticationException("Authentication Failed");
-                    }
-                    IsAuthenticated = true;
-                    _authenticationCookie = response.Response.Cookies;
-                    _username = username;
-                }
-                else
-                {
-                    throw new AuthenticationException(response.Response.StatusDescription);
-                }
-            }
-            catch (HttpException exception)
-            {
-                throw new AuthenticationException(exception.StatusDescription);
-            }
+            //    if (response.Response.StatusCode == HttpStatusCode.OK)
+            //    {
+            //        if (String.Compare(response.Response.DynamicBody.login, "ok", StringComparison.CurrentCultureIgnoreCase) != 0)
+            //        {
+            //            throw new AuthenticationException("Authentication Failed");
+            //        }
+            //        IsAuthenticated = true;
+            //        authenticationCookie = response.Response.Cookies;
+            //        this.username = username;
+            //    }
+            //    else
+            //    {
+            //        throw new AuthenticationException(response.Response.StatusDescription);
+            //    }
+            //}
+            //catch (HttpException exception)
+            //{
+            //    throw new AuthenticationException(exception.StatusDescription);
+            //}
         }
 
         public void Logout()
         {
             IsAuthenticated = false;
-            _username = null;
-            _authenticationCookie = null;
+            username = null;
+            authenticationCookie = null;
         }
 
         public bool IsAuthenticated { get; private set; }
 
-        public User GetCurrentAuthenticatedUser()
+        public IUser GetCurrentAuthenticatedUser()
         {
-            var user = Get<User>("user/current");
 
-            if (user != null)
-            {
-                user.Username = _username;
+            //var user = Get<User>("user/current");
 
-                return user;
-            }
+            //if (user != null)
+            //{
+            //    user.Username = username;
+
+            //    return user;
+            //}
 
             return null;
         }
 
-        public dynamic Get(string command)
+        public async Task<JsonValue> Get(string command)
         {
-            var httpRequest = CreateHttpRequest();
 
-            try
+            var response = await Client.GetAsync(uriConstructor.ConstructBaseUri(command));
+            response.EnsureSuccessStatusCode();
+            var jsonValue = JsonValue.Parse(await response.Content.ReadAsStringAsync());
+            HttpStatusCode = response.StatusCode;
+
+            if (!response.IsSuccessStatusCode)
             {
-                var dynamicBody = httpRequest.Get(_uriConstructor.ConstructBaseUri(command)).DynamicBody();
-
-                HttpStatusCode = httpRequest.Response.StatusCode;
-
-                return dynamicBody;
-            }
-            catch (HttpException httpException)
-            {
-                if (httpException.StatusCode == HttpStatusCode.Forbidden)
+                if (response.StatusCode == HttpStatusCode.Forbidden)
                 {
-                    throw new InvalidRequestException("Not enough Rights");
+                    throw new HttpRequestException("Insufficient Rights.");
                 }
-                throw;
+                else
+                {
+                    throw new HttpRequestException("Unable to get data.");
+                }
             }
+
+            return jsonValue;
+
         }
 
-        string GetFileContentType(string filename)
-        {
-            var mime = "application/octetstream";
-            var extension = Path.GetExtension(filename);
-            if (extension != null)
-            {
-                var ext = extension.ToLower();
-                var rk = Microsoft.Win32.Registry.ClassesRoot.OpenSubKey(ext);
-                if (rk != null && rk.GetValue("Content Type") != null)
-                    mime = rk.GetValue("Content Type").ToString();
-            }
-            return mime;
-        }
+        //string GetFileContentType(string filename)
+        //{
+        //var mime = "application/octetstream";
+        //var extension = Path.GetExtension(filename);
+        //if (extension != null)
+        //{
+        //    var ext = extension.ToLower();
+        //    var rk = Microsoft.Win32.Registry.ClassesRoot.OpenSubKey(ext);
+        //    if (rk != null && rk.GetValue("Content Type") != null)
+        //        mime = rk.GetValue("Content Type").ToString();
+        //}
+        //return mime;
+        //}
 
         HttpClient MakePostRequest(string command, object data, string accept)
         {
-            var httpRequest = CreateHttpRequest();
+            var httpRequest = Client();
 
-            httpRequest.Request.Accept = accept;
+            //httpRequest.Request.Accept = accept;
 
-            httpRequest.Post(_uriConstructor.ConstructBaseUri(command), data,
-                             HttpContentTypes.ApplicationXWwwFormUrlEncoded);
+            //httpRequest.Post(uriConstructor.ConstructBaseUri(command), data,
+            //                 HttpContentTypes.ApplicationXWwwFormUrlEncoded);
 
-            HttpStatusCode = httpRequest.Response.StatusCode;
+            //HttpStatusCode = httpRequest.Response.StatusCode;
 
             return httpRequest;
         }
 
 
-        HttpClient CreateHttpRequest()
+        HttpClient Client
         {
-            var httpClient = new HttpClient();
-
-            httpClient.Request.Accept = HttpContentTypes.ApplicationJson;
-
-            httpClient.ThrowExceptionOnHttpError = true;
-
-            if (_authenticationCookie != null)
+            get
             {
-                httpClient.Request.Cookies = new CookieCollection { _authenticationCookie };
+                if (client == null)
+                {
+                    var cookieContainer = new CookieContainer();
+                    var handler = new HttpClientHandler()
+                    {
+                        CookieContainer = cookieContainer
+                    };
+
+                    var httpClient = new HttpClient(handler);
+
+                    httpClient
+                        .DefaultRequestHeaders
+                        .Accept
+                        .Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                    client = httpClient;
+                }
+
+                return client;
             }
-
-
-            return httpClient;
         }
 
 

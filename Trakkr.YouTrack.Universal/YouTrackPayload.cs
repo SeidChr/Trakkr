@@ -1,11 +1,13 @@
 ﻿using Trakkr.Core;
 
-namespace Trakkr.YouTrack
+namespace Trakkr.YouTrack.Universal
 {
     public class YouTrackPayload : IRepositoryPayload
     {
         public string Query { get; set; }
+
         public string TicketId { get; set; }
-        public string WorkItemId { get; set; }
+
+        public string EventId { get; set; }
     }
 }

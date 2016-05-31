@@ -31,7 +31,7 @@
 
 #endregion
 
-namespace YouTrackSharp.Infrastructure
+namespace Trakkr.YouTrack.Universal.YouTrackSharp.Infrastructure
 {
     public interface IUriConstructor
     {
