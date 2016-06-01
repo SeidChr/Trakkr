@@ -13,8 +13,6 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Autofac;
-using Trakkr.Core;
-using Trakkr.Core.Events;
 using Event = Trakkr.Core.Events.IEvent<Trakkr.Core.IRepositoryPayload>;
 
 // Die Vorlage "Leere Seite" ist unter http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409 dokumentiert.

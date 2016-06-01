@@ -9,7 +9,41 @@
     <Page.Resources>
         <viewModel:EventCollection x:Name="EventCollection"></viewModel:EventCollection>
         <DataTemplate x:Key="EventDataTemplate">
-            <Grid/>
+            <ListView d:DesignWidth="431.5" d:DesignHeight="48.5">
+                <ListView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                    <ItemsWrapGrid Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ListView.ItemsPanel>
+                <TextBlock x:Name="TimeStampBlock"
+                           TextWrapping="Wrap" 
+                           Text="{Binding Timestamp, Mode=OneWay, FallbackValue=[timestamp]}" 
+                           VerticalAlignment="Center" 
+                           HorizontalAlignment="Center"/>
+
+                <TextBlock x:Name="TypeBlock"     
+                           RelativePanel.RightOf="TimeStampBlock" 
+                           TextWrapping="Wrap" 
+                           Text="{Binding Type, Mode=OneWay, FallbackValue=[type]}" 
+                           VerticalAlignment="Center" 
+                           HorizontalAlignment="Center"/>
+
+                <TextBox x:Name="QueryBox" 
+                         RelativePanel.RightOf="TypeBlock" 
+                         Text="{Binding Payload.Query, Mode=TwoWay, FallbackValue=[query]}" />
+
+                <TextBox x:Name="TicketIdBox" 
+                         RelativePanel.RightOf="QueryBox" 
+                         Text="{Binding Payload.TicketId, Mode=TwoWay, FallbackValue=[TicketId]}" />
+
+                <TextBlock x:Name="EventIdBlock" 
+                           RelativePanel.RightOf="TicketIdBox" 
+                           Text="{Binding Payload.EventId, Mode=OneWay, FallbackValue=[EventId]}" 
+                           VerticalAlignment="Center" 
+                           HorizontalAlignment="Center" />
+
+            </ListView>
+
         </DataTemplate>
     </Page.Resources>
     <Pivot>
