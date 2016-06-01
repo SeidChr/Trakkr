@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Trakkr.Core
+﻿namespace Trakkr.Core
 {
     public interface IRepositoryPayload
     {
@@ -13,5 +7,7 @@ namespace Trakkr.Core
         string TicketId { get; set; }
 
         string EventId { get; set; }
+
+        string Description { get; set; }
     }
 }

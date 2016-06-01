@@ -9,41 +9,42 @@
     <Page.Resources>
         <viewModel:EventCollection x:Name="EventCollection"></viewModel:EventCollection>
         <DataTemplate x:Key="EventDataTemplate">
-            <ListView d:DesignWidth="431.5" d:DesignHeight="48.5">
-                <ListView.ItemsPanel>
-                    <ItemsPanelTemplate>
-                    <ItemsWrapGrid Orientation="Horizontal"/>
-                    </ItemsPanelTemplate>
-                </ListView.ItemsPanel>
+            <Grid d:DesignWidth="462.667" d:DesignHeight="82">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="1*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="3*"/>
+                </Grid.ColumnDefinitions>
                 <TextBlock x:Name="TimeStampBlock"
+                           VerticalAlignment="Center"
                            TextWrapping="Wrap" 
                            Text="{Binding Timestamp, Mode=OneWay, FallbackValue=[timestamp]}" 
-                           VerticalAlignment="Center" 
-                           HorizontalAlignment="Center"/>
-
-                <TextBlock x:Name="TypeBlock"     
-                           RelativePanel.RightOf="TimeStampBlock" 
-                           TextWrapping="Wrap" 
-                           Text="{Binding Type, Mode=OneWay, FallbackValue=[type]}" 
-                           VerticalAlignment="Center" 
-                           HorizontalAlignment="Center"/>
-
-                <TextBox x:Name="QueryBox" 
-                         RelativePanel.RightOf="TypeBlock" 
-                         Text="{Binding Payload.Query, Mode=TwoWay, FallbackValue=[query]}" />
-
-                <TextBox x:Name="TicketIdBox" 
-                         RelativePanel.RightOf="QueryBox" 
-                         Text="{Binding Payload.TicketId, Mode=TwoWay, FallbackValue=[TicketId]}" />
-
-                <TextBlock x:Name="EventIdBlock" 
-                           RelativePanel.RightOf="TicketIdBox" 
-                           Text="{Binding Payload.EventId, Mode=OneWay, FallbackValue=[EventId]}" 
-                           VerticalAlignment="Center" 
+                           Grid.Row="1"  
                            HorizontalAlignment="Center" />
 
-            </ListView>
+                <TextBlock x:Name="TypeBlock"
+                           Grid.Row="0" 
+                           Grid.Column="0"      
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Center"
+                           TextWrapping="Wrap" 
+                           Text="{Binding Type, Mode=OneWay, FallbackValue=[type]}" />
 
+                <TextBox x:Name="QueryBox" 
+                         VerticalAlignment="Center"
+                         HorizontalAlignment="Stretch"
+                         Text="{Binding Payload.Query, Mode=TwoWay, FallbackValue=[query]}" Grid.Row="0" Grid.Column="1" />
+
+                <TextBox x:Name="CommentBox" 
+                         Grid.Column="1" 
+                         Grid.Row="1"
+                         VerticalAlignment="Center"
+                         HorizontalAlignment="Stretch"
+                         Text="{Binding Payload.Description, Mode=TwoWay, FallbackValue=[description]}"  />
+            </Grid>
         </DataTemplate>
     </Page.Resources>
     <Pivot>
@@ -54,6 +55,11 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <ListBox x:Name="EventList" ItemsSource="{StaticResource EventCollection}" ItemTemplate="{StaticResource EventDataTemplate}" >
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                        </Style>
+                    </ListBox.ItemContainerStyle>
                 </ListBox>
                 <Grid Grid.Row="1">
                     <Grid.ColumnDefinitions>
