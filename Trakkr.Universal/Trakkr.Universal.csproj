@@ -100,7 +100,6 @@
     </Compile>
     <Compile Include="ViewModel\EventCollection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="YouTrack\YouTrackEventPayload.cs" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -133,13 +132,19 @@
       <Project>{2f67edc6-c15b-4a33-8631-4d31f6151644}</Project>
       <Name>Trakkr.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Trakkr.YouTrack.Universal\Trakkr.YouTrack.Universal.csproj">
+      <Project>{C4A8E913-1AA1-4630-A920-9F72C504A8FC}</Project>
+      <Name>Trakkr.YouTrack.Universal</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.ComponentModel.Composition">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.6\System.ComponentModel.Composition.dll</HintPath>
     </Reference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="YouTrack\" />
+  </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>

@@ -109,17 +109,17 @@
   <ItemGroup>
     <Compile Include="Connection.cs" />
     <Compile Include="IConnection.cs" />
-    <Compile Include="IUser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="YouTrackManager.cs" />
     <Compile Include="YouTrackPayload.cs" />
-    <Compile Include="YouTrackSharp\Infrastructure\DefaultUriConstructor.cs" />
-    <Compile Include="YouTrackSharp\Infrastructure\IConnection.cs" />
-    <Compile Include="YouTrackSharp\Infrastructure\IUriConstructor.cs" />
     <EmbeddedResource Include="Properties\Trakkr.YouTrack.Universal.rd.xml" />
   </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
-    <Folder Include="YouTrackSharp\Admin\" />
+    <ProjectReference Include="..\Trakkr.Core\Trakkr.Core.csproj">
+      <Project>{2F67EDC6-C15B-4A33-8631-4D31F6151644}</Project>
+      <Name>Trakkr.Core</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

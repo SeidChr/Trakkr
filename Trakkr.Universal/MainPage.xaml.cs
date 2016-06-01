@@ -33,12 +33,12 @@ namespace Trakkr.Universal
 
         private void StartButton_Click(object sender, RoutedEventArgs e)
         {
-            EventCollection.Add(App.Container.ResolveKeyed<Event>(EventType.Start));
+            EventCollection.Add(App.Container.ResolveKeyed<Event>(App.StartEventConstructorServiceId));
         }
 
         private void StopButton_Click(object sender, RoutedEventArgs e)
         {
-            EventCollection.Add(App.Container.ResolveKeyed<Event>(EventType.Stop));
+            EventCollection.Add(App.Container.ResolveKeyed<Event>(App.StopEventConstructorServiceId));
         }
     }
 }

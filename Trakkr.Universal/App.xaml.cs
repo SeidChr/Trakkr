@@ -19,7 +19,8 @@ using Windows.UI.Xaml.Navigation;
 using Autofac;
 using Trakkr.Core;
 using Trakkr.Core.Events;
-using Trakkr.Universal.YouTrack;
+using Trakkr.YouTrack.Universal;
+using Event = Trakkr.Core.Events.IEvent<Trakkr.Core.IRepositoryPayload>;
 
 namespace Trakkr.Universal
 {
@@ -28,6 +29,8 @@ namespace Trakkr.Universal
     /// </summary>
     sealed partial class App : Application
     {
+        public static readonly string StopEventConstructorServiceId = "Stop";
+        public static readonly string StartEventConstructorServiceId = "Start";
 
         public static IContainer Container { get; private set; }
 
@@ -51,17 +54,18 @@ namespace Trakkr.Universal
             var builder = new ContainerBuilder();
 
             builder
-                .RegisterType<YouTrackEventPayload>()
+                .RegisterType<YouTrackPayload>()
                 .As<IRepositoryPayload>()
                 .InstancePerDependency();
 
+            
             builder.Register(_ => new Event<IRepositoryPayload>
             {
                 Type = EventType.Stop,
                 Timestamp = DateTime.Now,
                 Payload = Container.Resolve<IRepositoryPayload>()
             })
-            .Keyed<IEvent<IRepositoryPayload>>(EventType.Stop)
+            .Named<Event>(StopEventConstructorServiceId)
             .InstancePerDependency();
 
             builder.Register(_ => new Event<IRepositoryPayload>
@@ -70,7 +74,7 @@ namespace Trakkr.Universal
                 Timestamp = DateTime.Now,
                 Payload = Container.Resolve<IRepositoryPayload>()
             })
-            .Keyed<IEvent<IRepositoryPayload>>(EventType.Stop)
+            .Named<Event>(StartEventConstructorServiceId)
             .InstancePerDependency();
 
             builder
