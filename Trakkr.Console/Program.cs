@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Web;
 using Trakkr.Core;
 using Trakkr.Core.Events;
 using Trakkr.Parse;
@@ -28,29 +29,59 @@ namespace Trakkr.Console
 
         static void Main(string[] args)
         {
-            if (args[0] == "RESET")
+            System.Console.Write("R for RESET, Any other key to READ A FILE... ");
+            var keyInfo = System.Console.ReadKey(true);
+            System.Console.WriteLine();
+
+            if (keyInfo.Key == ConsoleKey.R || (args.Length > 0 && args[0] == "RESET"))
             {
                 ResetSettings();
             }
             else
             {
-                var inputFile = new FileInfo(args[0]);
-
                 var connection = Authenticate();
 
-                var entries = ParseEvents(inputFile);
+                System.Console.WriteLine("USER: " + Properties.Settings.Default.Username);
+                System.Console.WriteLine("HOST: " + Properties.Settings.Default.Host + ":" + Properties.Settings.Default.Port);
 
-                var log = UpdateWorkItems(connection, entries);
-                var namePart = Path.Combine(
-                    Path.GetDirectoryName(inputFile.FullName), 
-                    Path.GetFileNameWithoutExtension(inputFile.FullName));
+                FileInfo inputFile = null;
+                if (args.Length >= 1)
+                {
+                    inputFile = new FileInfo(args[0]);
+                }
+                else
+                {
+                    System.Console.Write("Please enter InputFile: ");
+                    var inputFileName = System.Console.ReadLine();
+                    inputFileName = inputFileName.Trim(' ', '\"');
+                    inputFile = new FileInfo(inputFileName);
+                    inputFile.Refresh();
+                }
 
-                System.Console.WriteLine("Save log to: " + namePart + ".log");
+                //if (inputFile.Exists)
+                //{
+                //    System.Console.WriteLine("No input file given. Nothing to do.");
+                //    System.Console.WriteLine($"File {inputFile.FullName} does not exist.");
+                //    System.Console.Write("Press any key to exit.");
+                //    System.Console.ReadKey(true);
+                //}
+                //else
+                {
+                    var namePart = Path.Combine(Path.GetDirectoryName(inputFile.FullName), Path.GetFileNameWithoutExtension(inputFile.FullName));
+                    var logfileName = namePart + ".log";
 
-                //inputFile.MoveTo(namePart + ".done");
-                File.AppendAllLines(namePart + ".log", log);
+                    System.Console.WriteLine("LOG : " + logfileName);
 
-                System.Console.ReadKey(true);
+
+                    var entries = ParseEvents(inputFile);
+
+                    var logger = new FileAppendLogger(logfileName, $"Updating Workitems : {DateTime.Now.ToString("O")}");
+
+                    UpdateWorkItems(connection, entries, logger);
+
+                    System.Console.WriteLine("Done (press any key).");
+                    System.Console.ReadKey(true);
+                }
             }
         }
 
@@ -76,83 +107,152 @@ namespace Trakkr.Console
             return expando.ToDictionary(kvp => kvp.Key, kvp => (string)kvp.Value);
         }
 
-        private static IEnumerable<string> UpdateWorkItems(IConnection connection, IEnumerable<IEntry<ShortTrackingFormatPayload>> entries)
+        private static void UpdateWorkItems(IConnection connection, IEnumerable<IEntry<ShortTrackingFormatPayload>> entries, FileAppendLogger logger)
         {
-            var log = new List<string>
-            {
-                $"Updating Workitems : {DateTime.Now.ToString("O")}"
-            };
-
             var issueManagement = new IssueManagement(connection);
+
+            if (!OptionalPreconditionsFulfilled(entries)
+                || !RequiredPreconditionsFulfilled(entries, issueManagement)
+                || !IsEntryListApproved(entries, issueManagement))
+            {
+                return;
+            }
+
             foreach (var trakkrEntry in entries)
             {
-                var minutes = (int) Math.Round(trakkrEntry.Duration.TotalMinutes);
+                var minutes = (int)Math.Round(trakkrEntry.Duration.TotalMinutes);
+                System.Console.Write($"Saving: {trakkrEntry.Timestamp.ToShortDateString()} : {trakkrEntry.Payload.Query} ... : {minutes} Minutes ({trakkrEntry.Payload.Descrition}) ... ");
                 
-                if (CheckIfIssueExists(issueManagement, trakkrEntry.Payload.Query))
+                var doc = "<workItem>"
+                          + $"<date>{GetUnixTimestampMilliseconds(trakkrEntry.Timestamp)}</date>"
+                          + $"<duration>{minutes}</duration>"
+                          + $"<description>{HttpUtility.HtmlEncode(trakkrEntry.Payload.Descrition)}</description>"
+                          + "</workItem>";
+
+                var response = connection.PostXml($"issue/{trakkrEntry.Payload.Query}/timetracking/workitem", doc);
+                if (response.StatusCode == HttpStatusCode.Created)
                 {
-                    dynamic issue = issueManagement.GetIssue(trakkrEntry.Payload.Query);
-                    //var issue = IssueToDict(issueManagement.GetIssue(trakkrEntry.Payload.Query));
-                    //System.Console.Write(string.Join("; ", issue.Select((k, v) => "{" + k + " = " + v + "}")));
-
-                    string summary = issue.summary;
-
-                    System.Console.Write($"{trakkrEntry.Timestamp.ToShortDateString()} : {trakkrEntry.Payload.Query} {summary} : {minutes} Minutes ({trakkrEntry.Payload.Descrition}). Add (y/n) ? ");
-                    var key = System.Console.ReadKey(false);
-                    System.Console.WriteLine();
-
-                    if (key.Key == ConsoleKey.Y)
-                    {
-                        var doc = "<workItem>"
-                                  + $"<date>{GetUnixTimestampMilliseconds(trakkrEntry.Timestamp)}</date>"
-                                  + $"<duration>{minutes}</duration>"
-                                  + $"<description>{trakkrEntry.Payload.Descrition}</description>"
-                                  + "</workItem>";
-
-                        var response = connection.PostXml($"issue/{trakkrEntry.Payload.Query}/timetracking/workitem", doc);
-                        if (response.StatusCode == HttpStatusCode.Created)
-                        {
-                            System.Console.WriteLine($"Work item saved here: {response.Location}");
-                            log.Add($"Ticket {trakkrEntry.Payload.Query} ({trakkrEntry.Payload.Descrition}) : {minutes}m : {response.Location}");
-                        }
-
-                        //POST http://localhost:8081/rest/issue/HBR-63/timetracking/workitem
-                    }
-                    else
-                    {
-                        log.Add($"Ticket {trakkrEntry.Payload.Query} : {minutes}m : NOT ADDED!");
-                    }
-
-                    //https://confluence.jetbrains.com/display/YTD6/Get+Available+Work+Items+of+Issue
-
-                    // get all workitems
-                    // GET /rest/issue/{issue}/timetracking/workitem/
-                    //var result = connection.Get<object>($"issue/{trakkrEntry.Mark}/timetracking/workitem/");
-
-                    // add a workitem
-                    //connection.Post($"issue/{trakkrEntry.Mark}/timetracking/workitem", "<xml/>");
-                    //POST http://localhost:8081/rest/issue/HBR-63/timetracking/workitem
+                    logger.Log($"Ticket {trakkrEntry.Payload.Query} ({trakkrEntry.Payload.Descrition}) : {minutes}m : {response.Location}");
+                    System.Console.Write("SAVED!");
                 }
                 else
                 {
-                    var message = $"Unable to find issue {trakkrEntry.Payload.Query}";
-                    System.Console.WriteLine(message);
-                    log.Add(message);
-
-                    //var issues = issueManagement.GetIssuesBySearch(trakkrEntry.Mark);
-                    //foreach (var issue in issues)
-                    //{
-
-                    //    System.Console.WriteLine($"Issue: {issue.Id}");
-                    //    var members = issue.GetDynamicMemberNames();
-                    //    foreach (var member in members)
-                    //    {
-                    //        System.Console.WriteLine($"Member: {member}");
-                    //    }
-                    //}
+                    System.Console.Write($"ERROR! Response Code: {response.StatusCode}");
+                    logger.Log($"Ticket {trakkrEntry.Payload.Query} ({trakkrEntry.Payload.Descrition})" +
+                               $" : {minutes}m" +
+                               $" : ERROR! Response Code: {response.StatusCode}");
                 }
+
+                //POST http://localhost:8081/rest/issue/HBR-63/timetracking/workitem
+
+                System.Console.WriteLine();
+
+                //https://confluence.jetbrains.com/display/YTD6/Get+Available+Work+Items+of+Issue
+
+                // get all workitems
+                // GET /rest/issue/{issue}/timetracking/workitem/
+                //var result = connection.Get<object>($"issue/{trakkrEntry.Mark}/timetracking/workitem/");
+
+                // add a workitem
+                //connection.Post($"issue/{trakkrEntry.Mark}/timetracking/workitem", "<xml/>");
+                //POST http://localhost:8081/rest/issue/HBR-63/timetracking/workitem
+            }
+        }
+
+        private static bool IsEntryListApproved(IEnumerable<IEntry<ShortTrackingFormatPayload>> entries, IssueManagement issueManagement)
+        {
+            foreach (var trakkrEntry in entries)
+            {
+                var minutes = (int)Math.Round(trakkrEntry.Duration.TotalMinutes);
+                dynamic issue = issueManagement.GetIssue(trakkrEntry.Payload.Query);
+                string summary = issue.summary;
+                System.Console.WriteLine($"{trakkrEntry.Timestamp.ToShortDateString()} : {trakkrEntry.Payload.Query} {summary} : {minutes} Minutes ({trakkrEntry.Payload.Descrition})");
             }
 
-            return log;
+            System.Console.Write("Please review the entries. Continue (y/n) ?");
+            var key = System.Console.ReadKey(false);
+            System.Console.Write(" ");
+            var @continue = key.Key == ConsoleKey.Y;
+            System.Console.WriteLine();
+
+            return @continue;
+        }
+
+        private static bool RequiredPreconditionsFulfilled(IEnumerable<IEntry<ShortTrackingFormatPayload>> entries,
+            IssueManagement issueManagement)
+        {
+            var @continue = true;
+
+            var entryExistence = entries.Select(e => new { e.Payload.Query, Exists = CheckIfIssueExists(issueManagement, e.Payload.Query) }).ToList();
+            if (entryExistence.Any(e => !e.Exists))
+            {
+                var ticketQueries = string.Join(", ", entryExistence.Where(e => !e.Exists).Select(e => e.Query));
+                System.Console.WriteLine($"There are entries that cannot be found: {ticketQueries}");
+                @continue = false;
+            }
+
+            if (!@continue)
+            {
+                System.Console.Write("There have been errors. Cannot Continue.");
+                System.Console.ReadKey(true);
+                System.Console.WriteLine();
+            }
+
+            return @continue;
+        }
+
+        private static bool OptionalPreconditionsFulfilled(IEnumerable<IEntry<ShortTrackingFormatPayload>> entries)
+        {
+            var maxTicketDuration = new TimeSpan(0, 10, 0, 0);
+            var difference = new TimeSpan(35, 0, 0, 0);
+            var now = DateTime.Now;
+            var max = now + difference;
+            var min = now - difference;
+            var @continue = true;
+
+            if (entries.Any(e => e.Timestamp > max || e.Timestamp < min))
+            {
+                //System.Console.WriteLine(difference.TotalDays + " days off");
+                var first = entries.First(e => e.Timestamp > max || e.Timestamp < min);
+                System.Console.WriteLine($"There are entries that are very far in future or past. ({first.Payload.Query}: {first.Timestamp.ToShortDateString()}:{first.Timestamp.ToShortTimeString()})");
+                @continue = false;
+            }
+
+            if (entries.Any(e => string.IsNullOrWhiteSpace(e.Payload.Descrition)))
+            {
+                System.Console.WriteLine("There are entries that do not have a description.");
+                @continue = false;
+            }
+
+            if (entries.Any(e => e.Duration > maxTicketDuration))
+            {
+                System.Console.WriteLine($"There are entries that are longer than {maxTicketDuration.TotalHours} hours.");
+                @continue = false;
+            }
+
+            var last = DateTime.MinValue;
+            foreach (var current in entries.Select(entry => entry.Timestamp))
+            {
+                if (current < last)
+                {
+                    System.Console.WriteLine("The entries are not propperly ordered.");
+                    @continue = false;
+                    break;
+                }
+
+                last = current;
+            }
+
+            if (!@continue)
+            {
+                System.Console.Write("There have been warnings. Continue (y/n) ?");
+                var key = System.Console.ReadKey(false);
+                System.Console.Write(" ");
+                @continue = key.Key == ConsoleKey.Y;
+                System.Console.WriteLine();
+            }
+
+            return @continue;
         }
 
         private static IEnumerable<IEntry<ShortTrackingFormatPayload>> ParseEvents(FileInfo inputFile)
@@ -173,7 +273,7 @@ namespace Trakkr.Console
                 entries = trakkr.HandleEvents(parser.Parse(input));
             }
 
-            return entries;
+            return entries.ToList();
         }
 
         private static IConnection Authenticate()

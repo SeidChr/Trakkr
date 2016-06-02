@@ -58,6 +58,7 @@
     <Compile Include="YouTrackManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="YouTrackPayload.cs" />
+    <Compile Include="YouTrackRepository.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -10,6 +10,8 @@ namespace Trakkr.Core
     {
         string Query { get; set; }
 
+        string Description { get; set; }
+
         string TicketId { get; set; }
 
         string EventId { get; set; }
