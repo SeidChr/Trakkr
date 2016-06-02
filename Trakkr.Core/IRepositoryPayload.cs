@@ -9,7 +9,5 @@
         string TicketId { get; set; }
 
         string EventId { get; set; }
-
-        string Description { get; set; }
     }
 }
