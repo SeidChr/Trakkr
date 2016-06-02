@@ -2,6 +2,8 @@
 using System.Windows;
 using System.Windows.Controls;
 using Autofac;
+using Trakkr.Core;
+using Trakkr.Core.Events;
 using Trakkr.ViewModel;
 
 namespace Trakkr
@@ -16,11 +18,17 @@ namespace Trakkr
         public MainWindow()
         {
             InitializeComponent();
+            
         }
 
-        private void EventList_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void StartButton_Click(object sender, RoutedEventArgs e)
         {
-            EventList.ScrollIntoView(EventList.SelectedItem);
+            new TrakkrEventViewModel
+            {
+                Type = EventType.Start,
+                Timestamp = DateTime.Now,
+                Payload = App.Container.Resolve<IRepositoryPayload>()
+            };
         }
     }
 }

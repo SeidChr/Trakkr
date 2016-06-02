@@ -4,13 +4,14 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{7C776BA7-E205-4232-A948-494C4CDB9264}</ProjectGuid>
+    <ProjectGuid>{BAE3FFB8-34B7-426B-AD66-4E6D5C96E0E1}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Trakkr.YouTrack</RootNamespace>
     <AssemblyName>Trakkr.YouTrack</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -64,7 +65,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Trakkr.Core\Trakkr.Core.csproj">
-      <Project>{6672655E-118D-46F2-9E20-36C162879869}</Project>
+      <Project>{2f67edc6-c15b-4a33-8631-4d31f6151644}</Project>
       <Name>Trakkr.Core</Name>
     </ProjectReference>
   </ItemGroup>

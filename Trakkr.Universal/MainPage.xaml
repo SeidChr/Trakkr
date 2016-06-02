@@ -1,0 +1,102 @@
+﻿<Page
+    x:Class="Trakkr.Universal.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewModel="using:Trakkr.Universal.ViewModel"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <viewModel:EventCollection x:Name="EventCollection"></viewModel:EventCollection>
+        <DataTemplate x:Key="EventDataTemplate">
+            <Grid d:DesignWidth="462.667" d:DesignHeight="82">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="1*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="3*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock x:Name="TimeStampBlock"
+                           VerticalAlignment="Center"
+                           TextWrapping="Wrap" 
+                           Text="{Binding Timestamp, Mode=OneWay, FallbackValue=[timestamp]}" 
+                           Grid.Row="1"  
+                           HorizontalAlignment="Center" />
+
+                <TextBlock x:Name="TypeBlock"
+                           Grid.Row="0" 
+                           Grid.Column="0"      
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Center"
+                           TextWrapping="Wrap" 
+                           Text="{Binding Type, Mode=OneWay, FallbackValue=[type]}" />
+
+                <TextBox x:Name="QueryBox" 
+                         VerticalAlignment="Center"
+                         HorizontalAlignment="Stretch"
+                         Text="{Binding Payload.Query, Mode=TwoWay, FallbackValue=[query]}" Grid.Row="0" Grid.Column="1" />
+
+                <TextBox x:Name="CommentBox" 
+                         Grid.Column="1" 
+                         Grid.Row="1"
+                         VerticalAlignment="Center"
+                         HorizontalAlignment="Stretch"
+                         Text="{Binding Payload.Description, Mode=TwoWay, FallbackValue=[description]}"  />
+            </Grid>
+        </DataTemplate>
+    </Page.Resources>
+    <Pivot>
+        <PivotItem Header="Events">
+            <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" VerticalAlignment="Stretch">
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <ListBox x:Name="EventList" ItemsSource="{StaticResource EventCollection}" ItemTemplate="{StaticResource EventDataTemplate}" >
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                </ListBox>
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
+                    <Button x:Name="StartButton" HorizontalAlignment="Stretch" Content="Start" Command="{Binding StartCommand}" Click="StartButton_Click" Height="32" Margin="0,0,2,0"/>
+                    <Button x:Name="StopButton" HorizontalAlignment="Stretch" RelativePanel.RightOf="StartButton" Content="Stop" Command="{Binding StopCommand}" Grid.Column="1" Height="32" Margin="2,0,0,0" Click="StopButton_Click"/>
+                </Grid>
+            </Grid>
+        </PivotItem>
+        <PivotItem Header="Settings">
+            <ScrollViewer>
+                <StackPanel VerticalAlignment="Top">
+                    <TextBlock Text="Username"/>
+                    <TextBox x:Name="Username" TextWrapping="Wrap"/>
+                    <TextBlock Text="Password"/>
+                    <PasswordBox x:Name="Password"/>
+                    <TextBlock Text="Server"/>
+                    <TextBox x:Name="Server" TextWrapping="Wrap"/>
+                </StackPanel>
+            </ScrollViewer>
+        </PivotItem>
+    </Pivot>
+</Page>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

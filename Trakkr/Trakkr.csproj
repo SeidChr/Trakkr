@@ -9,11 +9,12 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Trakkr</RootNamespace>
     <AssemblyName>Trakkr</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <TargetFrameworkProfile />
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
@@ -104,6 +105,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ViewModel\MainViewEventCollection.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="ViewModel\SearchCommand.cs" />
     <Compile Include="ViewModel\TrakkrEventViewModel.cs" />
@@ -155,11 +157,11 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Trakkr.Core\Trakkr.Core.csproj">
-      <Project>{6672655E-118D-46F2-9E20-36C162879869}</Project>
+      <Project>{2f67edc6-c15b-4a33-8631-4d31f6151644}</Project>
       <Name>Trakkr.Core</Name>
     </ProjectReference>
     <ProjectReference Include="..\Trakkr.YouTrack\Trakkr.YouTrack.csproj">
-      <Project>{7C776BA7-E205-4232-A948-494C4CDB9264}</Project>
+      <Project>{bae3ffb8-34b7-426b-ad66-4e6d5c96e0e1}</Project>
       <Name>Trakkr.YouTrack</Name>
     </ProjectReference>
   </ItemGroup>
