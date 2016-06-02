@@ -9,5 +9,7 @@ namespace Trakkr.YouTrack.Universal
         public string TicketId { get; set; }
 
         public string EventId { get; set; }
+
+        public string Description { get; set; }
     }
 }
