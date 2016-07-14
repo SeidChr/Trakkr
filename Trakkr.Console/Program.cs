@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 using System.Web;
 using Trakkr.Core;
 using Trakkr.Core.Events;
@@ -14,26 +16,18 @@ namespace Trakkr.Console
 {
     class Program
     {
-        private static readonly DateTime UnixEpoch =
-            new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-
-        public static DateTime DateTimeFromUnixTimestampMillis(long millis)
-        {
-            return UnixEpoch.AddMilliseconds(millis);
-        }
-
-        public static long GetUnixTimestampMilliseconds(DateTime dateTime)
-        {
-            return (long)dateTime.Subtract(UnixEpoch).TotalMilliseconds;
-        }
-
         static void Main(string[] args)
         {
-            System.Console.Write("R for RESET, Any other key to READ A FILE... ");
-            var keyInfo = System.Console.ReadKey(true);
-            System.Console.WriteLine();
+            var reset = false;
+            if (args.Length <= 0)
+            {
+                System.Console.Write("R for RESET, Any other key to READ A FILE... ");
+                var keyInfo = System.Console.ReadKey(true);
+                reset = keyInfo.Key == ConsoleKey.R;
+                System.Console.WriteLine();
+            }
 
-            if (keyInfo.Key == ConsoleKey.R || (args.Length > 0 && args[0] == "RESET"))
+            if (reset || (args.Length > 0 && args[0] == "RESET"))
             {
                 ResetSettings();
             }
@@ -41,8 +35,8 @@ namespace Trakkr.Console
             {
                 var connection = Authenticate();
 
-                System.Console.WriteLine("USER: " + Properties.Settings.Default.Username);
-                System.Console.WriteLine("HOST: " + Properties.Settings.Default.Host + ":" + Properties.Settings.Default.Port);
+                Interaction.Notice("USER: " + Properties.Settings.Default.Username);
+                Interaction.Notice("HOST: " + Properties.Settings.Default.Host + ":" + Properties.Settings.Default.Port);
 
                 FileInfo inputFile = null;
                 if (args.Length >= 1)
@@ -51,37 +45,35 @@ namespace Trakkr.Console
                 }
                 else
                 {
-                    System.Console.Write("Please enter InputFile: ");
-                    var inputFileName = System.Console.ReadLine();
-                    inputFileName = inputFileName.Trim(' ', '\"');
+                    var inputFileName = Interaction.GetText("Please enter InputFile");
                     inputFile = new FileInfo(inputFileName);
                     inputFile.Refresh();
                 }
 
-                //if (inputFile.Exists)
-                //{
-                //    System.Console.WriteLine("No input file given. Nothing to do.");
-                //    System.Console.WriteLine($"File {inputFile.FullName} does not exist.");
-                //    System.Console.Write("Press any key to exit.");
-                //    System.Console.ReadKey(true);
-                //}
-                //else
+                var namePart = Path.Combine(Path.GetDirectoryName(inputFile.FullName), Path.GetFileNameWithoutExtension(inputFile.FullName));
+                var logfileName = namePart + ".log";
+
+                Interaction.Notice("LOG : " + logfileName);
+
+                bool failure;
+                do
                 {
-                    var namePart = Path.Combine(Path.GetDirectoryName(inputFile.FullName), Path.GetFileNameWithoutExtension(inputFile.FullName));
-                    var logfileName = namePart + ".log";
-
-                    System.Console.WriteLine("LOG : " + logfileName);
-
-
                     var entries = ParseEvents(inputFile);
 
-                    var logger = new FileAppendLogger(logfileName, $"Updating Workitems : {DateTime.Now.ToString("O")}");
+                    var logger = new FileAppendLogger(logfileName,
+                        $"Updating Workitems : {DateTime.Now.ToString("O")}");
 
-                    UpdateWorkItems(connection, entries, logger);
-
-                    System.Console.WriteLine("Done (press any key).");
-                    System.Console.ReadKey(true);
+                    failure = !UpdateWorkItems(connection, entries, logger);
                 }
+                while (failure && Interaction.Confirm("Retry?"));
+
+                if (failure)
+                {
+                    // do not show message when retry was declined
+                    return;
+                }
+
+                Interaction.Acknowledge("Done (press any key).");
             }
         }
 
@@ -101,30 +93,44 @@ namespace Trakkr.Console
             return result;
         }
 
-        private static Dictionary<string, string> IssueToDict(Issue issue)
-        {
-            var expando = issue.ToExpandoObject();
-            return expando.ToDictionary(kvp => kvp.Key, kvp => (string)kvp.Value);
-        }
-
-        private static void UpdateWorkItems(IConnection connection, IEnumerable<IEntry<ShortTrackingFormatPayload>> entries, FileAppendLogger logger)
+        private static bool UpdateWorkItems(IConnection connection, IEnumerable<IEntry<ShortTrackingFormatPayload>> entries, FileAppendLogger logger)
         {
             var issueManagement = new IssueManagement(connection);
 
-            if (!OptionalPreconditionsFulfilled(entries)
-                || !RequiredPreconditionsFulfilled(entries, issueManagement)
-                || !IsEntryListApproved(entries, issueManagement))
+            var errors = !RequiredPreconditionsFulfilled(entries, issueManagement);
+            var warnings = !OptionalPreconditionsFulfilled(entries);
+
+            if (errors)
             {
-                return;
+                if (warnings)
+                {
+                    Interaction.Acknowledge("There have been errors and warnings. Cannot store entries.");
+                    return false;
+                }
+
+                Interaction.Acknowledge("There have been errors. Cannot store entries.");
+                return false;
+            }
+
+            if (warnings && !Interaction.Confirm("There have been warnings. Continue?"))
+            {
+                return false;
+            }
+
+            PrintEntryList(entries, issueManagement);
+
+            if (!Interaction.Confirm("Please review the entries. Continue?"))
+            {
+                return false;
             }
 
             foreach (var trakkrEntry in entries)
             {
                 var minutes = (int)Math.Round(trakkrEntry.Duration.TotalMinutes);
                 System.Console.Write($"Saving: {trakkrEntry.Timestamp.ToShortDateString()} : {trakkrEntry.Payload.Query} ... : {minutes} Minutes ({trakkrEntry.Payload.Descrition}) ... ");
-                
+
                 var doc = "<workItem>"
-                          + $"<date>{GetUnixTimestampMilliseconds(trakkrEntry.Timestamp)}</date>"
+                          + $"<date>{UnixTime.GetUnixTimestampMilliseconds(trakkrEntry.Timestamp)}</date>"
                           + $"<duration>{minutes}</duration>"
                           + $"<description>{HttpUtility.HtmlEncode(trakkrEntry.Payload.Descrition)}</description>"
                           + "</workItem>";
@@ -157,25 +163,19 @@ namespace Trakkr.Console
                 //connection.Post($"issue/{trakkrEntry.Mark}/timetracking/workitem", "<xml/>");
                 //POST http://localhost:8081/rest/issue/HBR-63/timetracking/workitem
             }
+
+            return true;
         }
 
-        private static bool IsEntryListApproved(IEnumerable<IEntry<ShortTrackingFormatPayload>> entries, IssueManagement issueManagement)
+        private static void PrintEntryList(IEnumerable<IEntry<ShortTrackingFormatPayload>> entries, IssueManagement issueManagement)
         {
             foreach (var trakkrEntry in entries)
             {
                 var minutes = (int)Math.Round(trakkrEntry.Duration.TotalMinutes);
                 dynamic issue = issueManagement.GetIssue(trakkrEntry.Payload.Query);
                 string summary = issue.summary;
-                System.Console.WriteLine($"{trakkrEntry.Timestamp.ToShortDateString()} : {trakkrEntry.Payload.Query} {summary} : {minutes} Minutes ({trakkrEntry.Payload.Descrition})");
+                Interaction.Notice($"{trakkrEntry.Timestamp.ToShortDateString()} : {trakkrEntry.Payload.Query} {summary} : {minutes} Minutes ({trakkrEntry.Payload.Descrition})");
             }
-
-            System.Console.Write("Please review the entries. Continue (y/n) ?");
-            var key = System.Console.ReadKey(false);
-            System.Console.Write(" ");
-            var @continue = key.Key == ConsoleKey.Y;
-            System.Console.WriteLine();
-
-            return @continue;
         }
 
         private static bool RequiredPreconditionsFulfilled(IEnumerable<IEntry<ShortTrackingFormatPayload>> entries,
@@ -187,15 +187,8 @@ namespace Trakkr.Console
             if (entryExistence.Any(e => !e.Exists))
             {
                 var ticketQueries = string.Join(", ", entryExistence.Where(e => !e.Exists).Select(e => e.Query));
-                System.Console.WriteLine($"There are entries that cannot be found: {ticketQueries}");
+                Interaction.Notice($"ERROR: There are entries that cannot be found: {ticketQueries}");
                 @continue = false;
-            }
-
-            if (!@continue)
-            {
-                System.Console.Write("There have been errors. Cannot Continue.");
-                System.Console.ReadKey(true);
-                System.Console.WriteLine();
             }
 
             return @continue;
@@ -214,19 +207,19 @@ namespace Trakkr.Console
             {
                 //System.Console.WriteLine(difference.TotalDays + " days off");
                 var first = entries.First(e => e.Timestamp > max || e.Timestamp < min);
-                System.Console.WriteLine($"There are entries that are very far in future or past. ({first.Payload.Query}: {first.Timestamp.ToShortDateString()}:{first.Timestamp.ToShortTimeString()})");
+                Interaction.Notice($"WARNING: There are entries that are very far in future or past. ({first.Payload.Query}: {first.Timestamp.ToShortDateString()}:{first.Timestamp.ToShortTimeString()})");
                 @continue = false;
             }
 
             if (entries.Any(e => string.IsNullOrWhiteSpace(e.Payload.Descrition)))
             {
-                System.Console.WriteLine("There are entries that do not have a description.");
+                Interaction.Notice("WARNING: There are entries that do not have a description.");
                 @continue = false;
             }
 
             if (entries.Any(e => e.Duration > maxTicketDuration))
             {
-                System.Console.WriteLine($"There are entries that are longer than {maxTicketDuration.TotalHours} hours.");
+                Interaction.Notice($"WARNING: There are entries that are longer than {maxTicketDuration.TotalHours} hours.");
                 @continue = false;
             }
 
@@ -235,21 +228,12 @@ namespace Trakkr.Console
             {
                 if (current < last)
                 {
-                    System.Console.WriteLine("The entries are not propperly ordered.");
+                    Interaction.Notice("WARNING: The entries are not propperly ordered.");
                     @continue = false;
                     break;
                 }
 
                 last = current;
-            }
-
-            if (!@continue)
-            {
-                System.Console.Write("There have been warnings. Continue (y/n) ?");
-                var key = System.Console.ReadKey(false);
-                System.Console.Write(" ");
-                @continue = key.Key == ConsoleKey.Y;
-                System.Console.WriteLine();
             }
 
             return @continue;
@@ -280,23 +264,18 @@ namespace Trakkr.Console
         {
             if (string.IsNullOrWhiteSpace(Properties.Settings.Default.Host))
             {
-                System.Console.Write("Youtrack Host: ");
-                var host = System.Console.ReadLine();
-                Properties.Settings.Default.Host = host;
+                Properties.Settings.Default.Host = Interaction.GetText("Youtrack Host");
             }
 
             if (string.IsNullOrWhiteSpace(Properties.Settings.Default.Username))
             {
-                System.Console.Write("Username: ");
-                var username = System.Console.ReadLine();
-                Properties.Settings.Default.Username = username;
+                Properties.Settings.Default.Username = Interaction.GetText("Username");
             }
 
             if (string.IsNullOrWhiteSpace(Properties.Settings.Default.Password))
             {
-                System.Console.Write("Password: ");
-                var password = System.Console.ReadLine();
-                Properties.Settings.Default.Password = password;
+                System.Console.WriteLine("Make sure nobody is watching!");
+                Properties.Settings.Default.Password = Interaction.GetText("Password"); ;
             }
 
             var connection = YouTrackManager.GetConnection(Properties.Settings.Default.Host,

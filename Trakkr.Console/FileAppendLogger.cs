@@ -34,6 +34,5 @@ namespace Trakkr.Console
 
             File.AppendAllLines(fileName, lines);
         }
-
     }
 }
