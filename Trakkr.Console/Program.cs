@@ -18,6 +18,12 @@ namespace Trakkr.Console
     {
         static void Main(string[] args)
         {
+            if (args.Length < 0)
+            {
+                // click once argument data
+                args = AppDomain.CurrentDomain.SetupInformation.ActivationArguments.ActivationData;
+            }
+
             var reset = false;
             if (args.Length <= 0)
             {
