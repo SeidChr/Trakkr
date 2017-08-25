@@ -65,7 +65,7 @@ namespace Trakkr.Console
                 do
                 {
                     var entries = ParseEvents(inputFile);
-
+                    entries = RoundUpEntries(entries, 15);
                     var logger = new FileAppendLogger(logfileName,
                         $"Updating Workitems : {DateTime.Now.ToString("O")}");
 
@@ -244,6 +244,9 @@ namespace Trakkr.Console
 
             return @continue;
         }
+
+        private static IEnumerable<IEntry<TPayload>> RoundUpEntries<TPayload>(IEnumerable<IEntry<TPayload>> entries, int minutes) 
+            => entries.Select(e => new EntryRoundUpView<TPayload>(e, minutes));
 
         private static IEnumerable<IEntry<ShortTrackingFormatPayload>> ParseEvents(FileInfo inputFile)
         {

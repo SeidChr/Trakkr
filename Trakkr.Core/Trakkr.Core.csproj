@@ -41,6 +41,7 @@
   <ItemGroup>
     <Compile Include="Events\BaseEvent.cs" />
     <Compile Include="Events\Entry.cs" />
+    <Compile Include="Events\EntryRoundUpView.cs" />
     <Compile Include="Events\Event.cs" />
     <Compile Include="Events\EventType.cs" />
     <Compile Include="Events\IBaseEvent.cs" />

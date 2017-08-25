@@ -52,7 +52,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>935B03902CEC8E7CC1CD565CA14E3E624F0BA7D4</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>CD55F2439F42B18678B988A42365DABF39AE6C11</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
     <ManifestKeyFile>Trakkr_TemporaryKey.pfx</ManifestKeyFile>
