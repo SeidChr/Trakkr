@@ -192,7 +192,7 @@ namespace Trakkr.Console
 
                 dynamic issue = issueManagement.GetIssue(trakkrEntry.Payload.Query);
                 string summary = issue.summary;
-                Interaction.Notice($"{trakkrEntry.Timestamp.ToShortDateString()} : {trakkrEntry.Payload.Query} {summary} : {minutes} Minutes : {(int)total.TotalHours}:{total:mm} Today ({trakkrEntry.Payload.Descrition})");
+                Interaction.Notice($"{trakkrEntry.Timestamp.ToShortDateString()}\t// Task: {minutes}m\t// Day:{(int)total.TotalHours}h {total:mm}m\t// {trakkrEntry.Payload.Query}\t >> {summary} >> {trakkrEntry.Payload.Descrition}");
             }
         }
 
