@@ -175,12 +175,24 @@ namespace Trakkr.Console
 
         private static void PrintEntryList(IEnumerable<IEntry<ShortTrackingFormatPayload>> entries, IssueManagement issueManagement)
         {
+            DateTime date = DateTime.MinValue;
+            TimeSpan total = TimeSpan.Zero;
+
             foreach (var trakkrEntry in entries)
             {
+                if (trakkrEntry.Timestamp.Date != date)
+                {
+                    date = trakkrEntry.Timestamp.Date;
+                    total = TimeSpan.Zero;
+                }
+
                 var minutes = (int)Math.Round(trakkrEntry.Duration.TotalMinutes);
+
+                total += TimeSpan.FromMinutes(minutes);
+
                 dynamic issue = issueManagement.GetIssue(trakkrEntry.Payload.Query);
                 string summary = issue.summary;
-                Interaction.Notice($"{trakkrEntry.Timestamp.ToShortDateString()} : {trakkrEntry.Payload.Query} {summary} : {minutes} Minutes ({trakkrEntry.Payload.Descrition})");
+                Interaction.Notice($"{trakkrEntry.Timestamp.ToShortDateString()} : {trakkrEntry.Payload.Query} {summary} : {minutes} Minutes : {(int)total.TotalHours}:{total:mm} Today ({trakkrEntry.Payload.Descrition})");
             }
         }
 
