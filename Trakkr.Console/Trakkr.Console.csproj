@@ -51,7 +51,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>7B665CD87B2B3850255F668264ED85943015CB4F</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>2C802993223E49EB98DFE23F5CC272A647F32DB5</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
     <ManifestKeyFile>Trakkr.Console_TemporaryKey.pfx</ManifestKeyFile>
