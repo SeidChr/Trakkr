@@ -16,6 +16,8 @@ namespace Trakkr.Console
 {
     class Program
     {
+        private const int RoundEntriesUpToXMinutes = 5;
+
         static void Main(string[] args)
         {
             if (args.Length < 0)
@@ -65,7 +67,7 @@ namespace Trakkr.Console
                 do
                 {
                     var entries = ParseEvents(inputFile);
-                    entries = RoundUpEntries(entries, 15);
+                    entries = RoundUpEntries(entries, RoundEntriesUpToXMinutes);
                     var logger = new FileAppendLogger(logfileName,
                         $"Updating Workitems : {DateTime.Now.ToString("O")}");
 
