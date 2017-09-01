@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
+using System.ComponentModel.Composition.Hosting;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Http.Headers;
-using System.Runtime.CompilerServices;
 using System.Web;
 using Trakkr.Core;
 using Trakkr.Core.Events;
+using Trakkr.Core.Filter;
 using Trakkr.Parse;
 using Trakkr.YouTrack;
 using YouTrackSharp.Issues;
@@ -16,8 +18,6 @@ namespace Trakkr.Console
 {
     class Program
     {
-        private const int RoundEntriesUpToXMinutes = 5;
-
         static void Main(string[] args)
         {
             if (args.Length < 0)
@@ -63,13 +63,37 @@ namespace Trakkr.Console
 
                 Interaction.Notice("LOG : " + logfileName);
 
+                var compositionCatalog = new DirectoryCatalog(".", "Trakkr.*");
+                var compositionContainer = new CompositionContainer(compositionCatalog);
+                
+                var dayFilters = compositionContainer.GetExports<ITrakkrDayFilter>();
+                var logFilters = compositionContainer.GetExports<ITrakkrLogFilter>();
+
                 bool failure;
                 do
                 {
                     var entries = ParseEvents(inputFile);
-                    entries = RoundUpEntries(entries, RoundEntriesUpToXMinutes);
-                    var logger = new FileAppendLogger(logfileName,
-                        $"Updating Workitems : {DateTime.Now.ToString("O")}");
+
+                    entries = entries
+                        .GroupBy(e => e.Timestamp.Date)
+                        .SelectMany(dateGroup =>
+                        {
+                            var result = dateGroup.AsEnumerable();
+
+                            foreach (var dayFilter in dayFilters)
+                            {
+                                result = dayFilter.Value.Filter(result, dateGroup.Key);
+                            }
+
+                            return result;
+                        });
+
+                    foreach (var logFilter in logFilters)
+                    {
+                        entries = logFilter.Value.Filter(entries);
+                    }
+
+                    var logger = new FileAppendLogger(logfileName, $"Updating Workitems : {DateTime.Now:O}");
 
                     failure = !UpdateWorkItems(connection, entries, logger);
                 }
@@ -84,6 +108,12 @@ namespace Trakkr.Console
                 Interaction.Acknowledge("Done (press any key).");
             }
         }
+
+        [Import]
+        public IEnumerable<ITrakkrDayFilter> DayFilters { get; set; } = Enumerable.Empty<ITrakkrDayFilter>();
+
+        [Import]
+        public IEnumerable<ITrakkrLogFilter> LogFilters { get; set; } = Enumerable.Empty<ITrakkrLogFilter>();
 
         private static bool CheckIfIssueExists(IssueManagement issueManagement, string issue)
         {
@@ -259,8 +289,7 @@ namespace Trakkr.Console
             return @continue;
         }
 
-        private static IEnumerable<IEntry<TPayload>> RoundUpEntries<TPayload>(IEnumerable<IEntry<TPayload>> entries, int minutes) 
-            => entries.Select(e => new EntryRoundUpView<TPayload>(e, minutes));
+
 
         private static IEnumerable<IEntry<ShortTrackingFormatPayload>> ParseEvents(FileInfo inputFile)
         {

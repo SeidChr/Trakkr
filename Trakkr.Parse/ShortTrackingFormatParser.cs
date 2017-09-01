@@ -3,10 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using Trakkr.Core;
 using Trakkr.Core.Events;
 
 namespace Trakkr.Parse
@@ -32,33 +29,35 @@ namespace Trakkr.Parse
             {
                 date = date.Date;
                 string timeLine;
-                string[] timeSplit;
                 while ((timeLine = reader.ReadLine()) != null)
                 {
-                    timeSplit = timeLine.Split(new []{' '}, 3);
-                
-                    if (timeSplit.Length >= 2)
+                    var timeSplit = timeLine.Split(new []{' '}, 3);
+
+                    if (timeSplit.Length < 2)
                     {
-                        var time = DateTime.ParseExact(timeSplit[0], "HHmm", null, DateTimeStyles.None).TimeOfDay;
-                        var eventTime = date.Add(time);
-                        var ticket = timeSplit[1];
-                        var description = string.Empty;
-                        if (timeSplit.Length > 2)
-                        {
-                            description = timeSplit[2];
-                        }
-                        var isStopEvent = string.Equals(ticket, "stop");
-                        yield return new Event<ShortTrackingFormatPayload>()
-                        {
-                            Type = isStopEvent ? EventType.Stop : EventType.Start,
-                            Timestamp = eventTime,
-                            Payload = new ShortTrackingFormatPayload()
-                            {
-                                Query = ticket,
-                                Descrition = description,
-                            },
-                        };
+                        continue;
                     }
+
+                    var time = DateTime.ParseExact(timeSplit[0], "HHmm", null, DateTimeStyles.None).TimeOfDay;
+                    var eventTime = date.Add(time);
+                    var ticket = timeSplit[1];
+                    var description = string.Empty;
+                    if (timeSplit.Length > 2)
+                    {
+                        description = timeSplit[2];
+                    }
+
+                    var isStopEvent = string.Equals(ticket, "stop");
+                    yield return new Event<ShortTrackingFormatPayload>()
+                    {
+                        Type = isStopEvent ? EventType.Stop : EventType.Start,
+                        Timestamp = eventTime,
+                        Payload = new ShortTrackingFormatPayload()
+                        {
+                            Query = ticket,
+                            Descrition = description,
+                        },
+                    };
                 }
             }
         }

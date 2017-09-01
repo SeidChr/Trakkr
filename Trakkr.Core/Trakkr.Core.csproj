@@ -41,12 +41,13 @@
   <ItemGroup>
     <Compile Include="Events\BaseEvent.cs" />
     <Compile Include="Events\Entry.cs" />
-    <Compile Include="Events\EntryRoundUpView.cs" />
     <Compile Include="Events\Event.cs" />
     <Compile Include="Events\EventType.cs" />
     <Compile Include="Events\IBaseEvent.cs" />
     <Compile Include="Events\IEntry.cs" />
     <Compile Include="Events\IEvent.cs" />
+    <Compile Include="Filter\ITrakkrDayFilter.cs" />
+    <Compile Include="Filter\ITrakkrLogFilter.cs" />
     <Compile Include="IRepository.cs" />
     <Compile Include="IRepositoryPayload.cs" />
     <Compile Include="ITrakkr.cs" />
