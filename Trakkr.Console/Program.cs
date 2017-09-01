@@ -63,7 +63,7 @@ namespace Trakkr.Console
 
                 Interaction.Notice("LOG : " + logfileName);
 
-                var compositionCatalog = new DirectoryCatalog(".", "Trakkr.*");
+                var compositionCatalog = new DirectoryCatalog("./Plugins", "*.dll");
                 var compositionContainer = new CompositionContainer(compositionCatalog);
                 
                 var dayFilters = compositionContainer.GetExports<ITrakkrDayFilter>();
